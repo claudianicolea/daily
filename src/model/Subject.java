@@ -1,9 +1,8 @@
 package model;
 
 import model.tasks.Task;
-import util.Color;
-
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Subject {
     public enum SubjectLevel {
@@ -22,21 +21,23 @@ public class Subject {
         DP_CORE
     }
 
+    private final UUID subjectID;
     private String name;
     private SubjectLevel level;
     private SubjectGroup group;
-    private Color color;
     private String teacherName;
     private String teacherEmail;
     private ArrayList<Task> tasks;
 
     public Subject(String name, SubjectLevel level, SubjectGroup group) {
+        subjectID = UUID.randomUUID();
         this.name = name;
         this.level = level;
         this.group = group;
         tasks = new ArrayList<>();
-        color = new Color();
     }
+
+    public UUID getSubjectID() { return subjectID; }
 
     public void setName(String name) {
         this.name = name;
@@ -57,44 +58,6 @@ public class Subject {
     public void setGroup(SubjectGroup group) { this.group = group; }
 
     public SubjectGroup getGroup() { return group; }
-
-    public void setColor(Color.ColorName colorName) {
-        switch(colorName) {
-            case Color.ColorName.RED:
-                color.setRed();
-                break;
-            case Color.ColorName.ORANGE:
-                color.setOrange();
-                break;
-            case Color.ColorName.YELLOW:
-                color.setYellow();
-                break;
-            case Color.ColorName.GREEN:
-                color.setGreen();
-                break;
-            case Color.ColorName.BLUE:
-                color.setBlue();
-                break;
-            case Color.ColorName.PURPLE:
-                color.setPurple();
-                break;
-            case Color.ColorName.PINK:
-                color.setPink();
-                break;
-            case Color.ColorName.BROWN:
-                color.setBrown();
-                break;
-            case Color.ColorName.BEIGE:
-                color.setBeige();
-                break;
-            case Color.ColorName.WHITE:
-                color.setWhite();
-                break;
-            case Color.ColorName.BLACK:
-                color.setBlack();
-                break;
-        }
-    }
 
     public void setTeacherName(String name) {
         teacherName = name;
@@ -118,5 +81,10 @@ public class Subject {
 
     public void removeTask(Task task) {
         tasks.remove(task);
+    }
+
+    public ArrayList<Task> searchTasks(String keyword) {
+        ArrayList<Task> searchResults = new ArrayList<>();
+        return searchResults;
     }
 }

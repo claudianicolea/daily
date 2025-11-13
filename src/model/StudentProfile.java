@@ -3,8 +3,10 @@ package model;
 import config.Settings;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class StudentProfile {
+    private final UUID profileID;
     private String name;
     private final String email;
     private final char[] password;
@@ -12,11 +14,14 @@ public class StudentProfile {
     private ArrayList<Subject> subjects;
 
     public StudentProfile(String name, String email, char[] password) {
+        profileID = UUID.randomUUID();
         this.name = name;
         this.email = email;
         this.password = password;
         subjects = new ArrayList<>();
     }
+
+    public UUID getProfileID() { return profileID; }
 
     public void setName(String name) {
         this.name = name;

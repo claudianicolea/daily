@@ -9,7 +9,7 @@ import java.awt.*;
 import static util.Error.showError;
 
 public class App {
-    public String APP_NAME = "Daily";
+    public static String APP_NAME = "Daily";
 
     public static JPanel mainPanel; // holds all screens
     public static CardLayout cardLayout;
@@ -17,7 +17,7 @@ public class App {
     public static int mainWindowWidth = 1000;
     public static int mainWindowHeight = 800;
     public static int padding = 20;
-    public static int textBoxWidth = 100;
+    public static int textBoxWidth = 300;
 
     App() {
         // frame setup
@@ -31,18 +31,19 @@ public class App {
         mainPanel = new JPanel(cardLayout);
 
         // add screens to the main panel
-        mainPanel.add(welcomePanel(), "welcome");
-        mainPanel.add(signUpPanel(), "signup");
-        mainPanel.add(logInPanel(), "login");
-        mainPanel.add(homePagePanel(), "homepage");
-        mainPanel.add(subjectsPanel(), "subjects");
-        mainPanel.add(settingsPanel(), "settings");
+        mainPanel.add(getWelcomePanel(), "welcome");
+        mainPanel.add(getSignUpPanel(), "signup");
+        mainPanel.add(getLogInPanel(), "login");
+        mainPanel.add(getHomePagePanel(), "homepage");
+        mainPanel.add(getProfilePanel(), "profile");
+        mainPanel.add(getSettingsPanel(), "settings");
+        mainPanel.add(getSubjectsPanel(), "subjects");
 
         frame.add(mainPanel);
         frame.setVisible(true);
     }
 
-    private JPanel welcomePanel() {
+    private JPanel getWelcomePanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
@@ -69,7 +70,7 @@ public class App {
 
         return panel;
     }
-    private JPanel signUpPanel() {
+    private JPanel getSignUpPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
@@ -128,7 +129,7 @@ public class App {
             }
             else {
                 StudentProfile newStudent = new StudentProfile(name.getText(), email.getText(), password.getPassword());
-                System.out.println("New student profile created with name " + newStudent.getName() + ", email " + newStudent.getEmail() + ", and password " + newStudent.showHiddenPassword());
+                System.out.println("New student profile created with id " + newStudent.getProfileID() + ", name " + newStudent.getName() + ", email " + newStudent.getEmail() + ", and password " + newStudent.showHiddenPassword());
                 cardLayout.show(mainPanel, "homepage");
             }
         });
@@ -136,7 +137,7 @@ public class App {
 
         return panel;
     }
-    private JPanel logInPanel() {
+    private JPanel getLogInPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
@@ -172,9 +173,9 @@ public class App {
         backButton.addActionListener(e -> cardLayout.show(mainPanel, "welcome"));
         panel.add(backButton);
 
-        JButton continueButton = new JButton("Continue");
-        continueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        continueButton.addActionListener(e -> {
+        JButton continueBtn = new JButton("Continue");
+        continueBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        continueBtn.addActionListener(e -> {
             if (email.getText().isEmpty() || password.getPassword().length == 0) {
                 System.out.println("Incomplete form submission when logging in.");
                 util.Error.showError(util.Error.ErrorType.INCOMPLETE_FORM_SUBMISSION);
@@ -183,37 +184,109 @@ public class App {
                 System.out.println("Invalid email address when logging in.");
                 util.Error.showError(util.Error.ErrorType.INVALID_EMAIL);
             }
-            else if (!Security.verifyLogin()) {
+            else if (!Security.verifyCredentials()) {
                 System.out.println("Incorrect credentials when logging in.");
                 showError(Error.ErrorType.INCORRECT_CREDENTIALS);
             }
             else {
+                // fetch user data from database instead of creating a new one
+                StudentProfile userSession = new StudentProfile("name", email.getText(), password.getPassword());
+                System.out.println("User with id " + userSession.getProfileID() + " logged into session.");
                 cardLayout.show(mainPanel, "homepage");
             }
         });
-        panel.add(continueButton);
+        panel.add(continueBtn);
 
         return panel;
     }
-    private JPanel homePagePanel() {
+    private JPanel getHomePagePanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
 
         // fetch students data from database and display on here
 
-        return panel;
-    } // pop up window panel when adding tasks
-    private JPanel subjectsPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+        JButton profileBtn = new JButton("Profile");
+        profileBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        profileBtn.addActionListener(e -> {
+            cardLayout.show(mainPanel, "profile");
+        });
+        panel.add(profileBtn);
+
+        JButton settingsBtn = new JButton("Settings");
+        settingsBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsBtn.addActionListener(e -> {
+            cardLayout.show(mainPanel, "settings");
+        });
+        panel.add(settingsBtn);
+
+        JButton subjectsBtn = new JButton("Edit subjects");
+        subjectsBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        subjectsBtn.addActionListener(e -> {
+            cardLayout.show(mainPanel, "subjects");
+        });
+        panel.add(subjectsBtn);
+
         return panel;
     }
-    private JPanel settingsPanel() {
+    private JPanel getProfilePanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+
+        JLabel title = new JLabel("Profile");
+        title.setFont(new Font("Arial", Font.BOLD, 24));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(title);
+        panel.add(Box.createRigidArea(new Dimension(0, padding)));
+
+        JButton homepageBtn = new JButton("Return to homepage");
+        homepageBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        homepageBtn.addActionListener(e -> {
+            cardLayout.show(mainPanel, "homepage");
+        });
+        panel.add(homepageBtn);
+
+        return panel;
+    }
+    private JPanel getSettingsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+
+        JLabel title = new JLabel("Settings");
+        title.setFont(new Font("Arial", Font.BOLD, 24));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(title);
+        panel.add(Box.createRigidArea(new Dimension(0, padding)));
+
+        JButton homepageBtn = new JButton("Return to homepage");
+        homepageBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        homepageBtn.addActionListener(e -> {
+            cardLayout.show(mainPanel, "homepage");
+        });
+        panel.add(homepageBtn);
+
+        return panel;
+    }
+    private JPanel getSubjectsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+
+        JLabel title = new JLabel("Subjects");
+        title.setFont(new Font("Arial", Font.BOLD, 24));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(title);
+        panel.add(Box.createRigidArea(new Dimension(0, padding)));
+
+        JButton homepageBtn = new JButton("Return to homepage");
+        homepageBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        homepageBtn.addActionListener(e -> {
+            cardLayout.show(mainPanel, "homepage");
+        });
+        panel.add(homepageBtn);
+
         return panel;
     }
 }

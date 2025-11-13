@@ -3,20 +3,33 @@ package model.tasks;
 import util.Date;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Task {
+    public enum TaskType {
+        EXAM_STUDY,
+        HOMEWORK,
+        INTERNAL_ASSESSMENT
+    }
+
+    private final UUID taskID;
     private String title;
     private String description;
     private Date deadline;
     private ArrayList<Subtask> subtasks;
     private boolean isDone;
+    private TaskType type;
 
-    public Task(String title) {
+    public Task(String title, TaskType type) {
+        taskID = UUID.randomUUID();
         this.title = title;
         deadline = null;
         subtasks = new ArrayList<>();
         isDone = false;
+        this.type = type;
     }
+
+    public UUID getTaskID() { return taskID; }
 
     public void setTitle(String title) {
         this.title = title;
@@ -57,4 +70,8 @@ public class Task {
     public boolean getCompletionStatus() {
         return isDone;
     }
+
+    public TaskType getType() { return type; }
+
+    public void setType(TaskType type) { this.type = type; }
 }

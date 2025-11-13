@@ -20,14 +20,14 @@ public class Error {
         frame.setLocationRelativeTo(null);
 
         JPanel errorPanel = new JPanel(App.cardLayout);
-        errorPanel.add(errorPanel(frame, err), "error");
+        errorPanel.add(getErrorPanel(frame, err), "error");
 
         frame.add(errorPanel);
         frame.setVisible(true);
     }
 
     // error pop up panel
-    public static JPanel errorPanel(JFrame frame, Error.ErrorType err) {
+    private static JPanel getErrorPanel(JFrame frame, Error.ErrorType err) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(App.padding, App.padding, App.padding, App.padding));

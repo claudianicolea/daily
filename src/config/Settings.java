@@ -1,6 +1,7 @@
 package config;
 
-import model.Subject;
+import util.Color;
+import java.util.UUID;
 
 public class Settings {
     public enum DisplayMode {
@@ -14,15 +15,21 @@ public class Settings {
         BY_SUBJECT_LEVEL
     }
 
+    private final UUID settingsID;
     private DisplayMode displayMode;
+    private Color.ColorName accentColor;
     private boolean showCompleted;
     private SubjectSortMode subjectSortMode;
 
     public Settings() {
+        settingsID = UUID.randomUUID();
+        accentColor = Color.ColorName.BLACK;
         displayMode = DisplayMode.LIGHT_MODE;
         showCompleted = false;
         subjectSortMode = SubjectSortMode.ALPHABETICAL;
     }
+
+    public UUID getSettingsID() { return settingsID; }
 
     public void toggleDisplayMode() {
         switch(displayMode) {
@@ -36,6 +43,10 @@ public class Settings {
     public DisplayMode getDisplayMode() {
         return displayMode;
     }
+
+    public void setAccentColor(Color.ColorName accentColor) { this.accentColor = accentColor; }
+
+    public Color.ColorName getAccentColor() { return accentColor; }
 
     public void toggleShowCompleted() { showCompleted = !showCompleted; }
 
