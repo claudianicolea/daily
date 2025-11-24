@@ -21,15 +21,12 @@ public class ExamStudy extends Task {
     public void setExamType(Assessment examType) {
         this.examType = examType;
     }
-
     public Assessment getExamType() {
         return examType;
     }
-
     public void isMock(boolean isMock) {
         this.isMock = isMock;
     }
-
     public boolean isMock() {
         return isMock;
     }

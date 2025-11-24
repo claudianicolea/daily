@@ -18,39 +18,32 @@ public class StudentProfile {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.settings = new Settings();
         subjects = new ArrayList<>();
     }
 
     public UUID getProfileID() { return profileID; }
-
     public void setName(String name) {
         this.name = name;
     }
-
     public String getName() {
         return name;
     }
-
     public String getEmail() {
         return email;
     }
-
     public String showHiddenPassword() {
         return "*".repeat(password.length);
     }
-
     public void setSettings(Settings settings) {
         this.settings = settings;
     }
-
     public Settings getSettings() {
         return settings;
     }
-
     public void addSubject(Subject subject) {
         subjects.add(subject);
     }
-
     public void removeSubject(Subject subject) {
         subjects.remove(subject);
     }

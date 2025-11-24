@@ -10,7 +10,6 @@ public class Homework extends Task {
     public void setLesson(String lesson) {
         this.lesson = lesson;
     }
-
     public String getLesson() {
         return lesson;
     }

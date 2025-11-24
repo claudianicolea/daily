@@ -14,23 +14,18 @@ public class InternalAssessment extends Task {
     public void setSection(String section) {
         this.section = section;
     }
-
     public String getSection() {
         return section;
     }
-
     public void isExperiment(boolean isExperiment) {
         this.isExperiment = isExperiment;
     }
-
     public boolean isExperiment() {
         return isExperiment;
     }
-
     public void isWriting(boolean isWriting) {
         this.isWriting = isWriting;
     }
-
     public boolean isWriting() {
         return isWriting;
     }

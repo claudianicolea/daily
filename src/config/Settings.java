@@ -1,6 +1,7 @@
 package config;
 
-import util.Color;
+import util.MyColor;
+import java.awt.*;
 import java.util.UUID;
 
 public class Settings {
@@ -17,13 +18,13 @@ public class Settings {
 
     private final UUID settingsID;
     private DisplayMode displayMode;
-    private Color.ColorName accentColor;
+    private MyColor accentColor;
     private boolean showCompleted;
     private SubjectSortMode subjectSortMode;
 
     public Settings() {
         settingsID = UUID.randomUUID();
-        accentColor = Color.ColorName.BLACK;
+        accentColor = MyColor.GRAY;
         displayMode = DisplayMode.LIGHT_MODE;
         showCompleted = false;
         subjectSortMode = SubjectSortMode.ALPHABETICAL;
@@ -43,18 +44,12 @@ public class Settings {
     public DisplayMode getDisplayMode() {
         return displayMode;
     }
-
-    public void setAccentColor(Color.ColorName accentColor) { this.accentColor = accentColor; }
-
-    public Color.ColorName getAccentColor() { return accentColor; }
-
+    public MyColor getAccentColor() { return accentColor; }
+    public java.awt.Color getAccentAwtColor() { return accentColor.toAwtColor(); }
     public void toggleShowCompleted() { showCompleted = !showCompleted; }
-
     public boolean getShowCompleted() {
         return showCompleted;
     }
-
     public void setSubjectSortMode(SubjectSortMode subjectSortMode) { this.subjectSortMode = subjectSortMode; }
-
     public SubjectSortMode getSubjectSortMode() { return subjectSortMode; }
 }

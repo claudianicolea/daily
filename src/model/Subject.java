@@ -38,39 +38,29 @@ public class Subject {
     }
 
     public UUID getSubjectID() { return subjectID; }
-
     public void setName(String name) {
         this.name = name;
     }
-
     public String getName() {
         return name;
     }
-
     public void setLevel(SubjectLevel level) {
         this.level = level;
     }
-
     public SubjectLevel getLevel() {
         return level;
     }
-
     public void setGroup(SubjectGroup group) { this.group = group; }
-
     public SubjectGroup getGroup() { return group; }
-
     public void setTeacherName(String name) {
         teacherName = name;
     }
-
     public String getTeacherName() {
         return teacherName;
     }
-
     public void setTeacherEmail(String email) {
         teacherEmail = email;
     }
-
     public String getTeacherEmail() {
         return teacherEmail;
     }
@@ -78,11 +68,11 @@ public class Subject {
     public void addTask(Task task) {
         tasks.add(task);
     }
-
     public void removeTask(Task task) {
         tasks.remove(task);
     }
 
+    // left to implement
     public ArrayList<Task> searchTasks(String keyword) {
         ArrayList<Task> searchResults = new ArrayList<>();
         return searchResults;

@@ -1,65 +1,52 @@
 package util;
 
 import model.App;
-import model.App.*;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Error {
+
     public enum ErrorType {
         INVALID_EMAIL,
         INCOMPLETE_FORM_SUBMISSION,
-        INCORRECT_CREDENTIALS
+        INCORRECT_CREDENTIALS,
+        INCOMPLETE_TASK_TITLE,
+        INCOMPLETE_NICKNAME
     }
 
-    public static void showError(Error.ErrorType err) {
-        JFrame frame = new JFrame("Error");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(App.mainWindowWidth / 2, App.mainWindowHeight / 2);
-        frame.setLocationRelativeTo(null);
+    public static void showError(ErrorType err) {
+        JDialog dialog = new JDialog(App.frame, "Error", true); // true = modal
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        JPanel errorPanel = new JPanel(App.cardLayout);
-        errorPanel.add(getErrorPanel(frame, err), "error");
-
-        frame.add(errorPanel);
-        frame.setVisible(true);
-    }
-
-    // error pop up panel
-    private static JPanel getErrorPanel(JFrame frame, Error.ErrorType err) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(App.padding, App.padding, App.padding, App.padding));
 
         switch (err) {
-            case Error.ErrorType.INCOMPLETE_FORM_SUBMISSION:
-                JLabel l1 = new JLabel("Please complete all fields before continuing");
-                l1.setAlignmentX(Component.CENTER_ALIGNMENT);
-                panel.add(l1);
+            case INCOMPLETE_FORM_SUBMISSION:
+                panel.add(App.createLabelP("Please complete all fields before continuing"));
                 break;
-            case Error.ErrorType.INCORRECT_CREDENTIALS:
-                JLabel l2 = new JLabel("Incorrect credentials");
-                l2.setAlignmentX(Component.CENTER_ALIGNMENT);
-                panel.add(l2);
-                JLabel l3 = new JLabel("Please double check and retry");
-                l3.setAlignmentX(Component.CENTER_ALIGNMENT);
-                panel.add(l3);
+            case INCORRECT_CREDENTIALS:
+                panel.add(App.createLabelP("Incorrect credentials"));
+                panel.add(App.createLabelP("Please double check and retry"));
                 break;
-            case Error.ErrorType.INVALID_EMAIL:
-                JLabel l4 = new JLabel("Please enter a valid email address");
-                l4.setAlignmentX(Component.CENTER_ALIGNMENT);
-                panel.add(l4);
+            case INVALID_EMAIL:
+                panel.add(App.createLabelP("Please enter a valid email address"));
+                break;
+            case INCOMPLETE_TASK_TITLE:
+                panel.add(App.createLabelP("Please add a task title to continue"));
+                break;
+            case INCOMPLETE_NICKNAME:
+                panel.add(App.createLabelP("Please enter your new desired nickname"));
                 break;
         }
 
-        JButton closeButton = new JButton("Close");
-        closeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        closeButton.addActionListener(e -> {
-            frame.dispose();
-        });
-        panel.add(closeButton);
+        panel.add(App.createButton("Close", e -> dialog.dispose()));
 
-        return panel;
+        dialog.add(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(App.frame);
+        dialog.setVisible(true);
     }
 }

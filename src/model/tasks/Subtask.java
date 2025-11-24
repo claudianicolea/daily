@@ -14,15 +14,11 @@ public class Subtask {
     }
 
     public UUID getSubtaskID() { return subtaskID; }
-
     public void setTitle(String title) { this.title = title; }
-
     public String getTitle() { return title; }
-
     public void setCompletionStatus(boolean isDone) {
         this.isDone = isDone;
     }
-
     public boolean getCompletionStatus() {
         return isDone;
     }
