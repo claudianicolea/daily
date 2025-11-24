@@ -24,7 +24,7 @@ public class Settings {
 
     public Settings() {
         settingsID = UUID.randomUUID();
-        accentColor = MyColor.GRAY;
+        accentColor = MyColor.GREY;
         displayMode = DisplayMode.LIGHT_MODE;
         showCompleted = false;
         subjectSortMode = SubjectSortMode.ALPHABETICAL;
