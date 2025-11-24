@@ -31,22 +31,14 @@ public class Settings {
     }
 
     public UUID getSettingsID() { return settingsID; }
-
-    public void toggleDisplayMode() {
-        switch(displayMode) {
-            case LIGHT_MODE:
-                displayMode = DisplayMode.DARK_MODE;
-            case DARK_MODE:
-                displayMode = DisplayMode.LIGHT_MODE;
-        }
-    }
-
+    public void setDisplayMode(DisplayMode displayMode) { this.displayMode = displayMode; }
     public DisplayMode getDisplayMode() {
         return displayMode;
     }
+    public void setAccentColor(MyColor.ColorName accentColor) { this.accentColor = MyColor.fromName(accentColor); }
     public MyColor getAccentColor() { return accentColor; }
     public java.awt.Color getAccentAwtColor() { return accentColor.toAwtColor(); }
-    public void toggleShowCompleted() { showCompleted = !showCompleted; }
+    public void setShowCompleted(boolean showCompleted) { this.showCompleted = showCompleted; }
     public boolean getShowCompleted() {
         return showCompleted;
     }

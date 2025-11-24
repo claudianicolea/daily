@@ -2,6 +2,7 @@ package util;
 
 public class MyColor {
     public enum ColorName {
+        GREY,
         RED,
         ORANGE,
         YELLOW,
@@ -11,8 +12,7 @@ public class MyColor {
         PINK,
         BROWN,
         BEIGE,
-        WHITE,
-        GRAY
+        WHITE
     }
 
     private final int red, green, blue;
@@ -35,7 +35,7 @@ public class MyColor {
     public static final MyColor BROWN  = new MyColor(64, 18, 0, ColorName.BROWN);
     public static final MyColor BEIGE  = new MyColor(181, 156, 147, ColorName.BEIGE);
     public static final MyColor WHITE  = new MyColor(240, 240, 240, ColorName.WHITE);
-    public static final MyColor GRAY  = new MyColor(100, 100, 100, ColorName.GRAY);
+    public static final MyColor GREY  = new MyColor(100, 100, 100, ColorName.GREY);
 
     public int getRed()   { return red; }
     public int getGreen() { return green; }
@@ -56,7 +56,7 @@ public class MyColor {
             case BROWN -> MyColor.BROWN;
             case BEIGE -> MyColor.BEIGE;
             case WHITE -> MyColor.WHITE;
-            default -> MyColor.GRAY;
+            default -> MyColor.GREY;
         };
     }
 }

@@ -1,16 +1,16 @@
 package model;
 
-import model.dialogs.AddTaskDialog;
-import model.dialogs.EditNicknameDialog;
+import config.Settings;
+import model.dialogs.*;
+import util.*;
 import util.Error;
-import util.Security;
-import util.MyColor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-
-import static util.Error.showError;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import static util.Error.*;
 
 public class App {
     public static String APP_NAME = "Daily";
@@ -50,8 +50,8 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-
         panel.add(createLabelH1("Welcome to Daily"));
+
         panel.add(createButton("Sign up", e -> cardLayout.show(mainPanel, "signup")));
         panel.add(createButton("Log in", e -> cardLayout.show(mainPanel, "login")));
 
@@ -61,7 +61,6 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-
         panel.add(createLabelH1("Create a new account"));
 
         panel.add(createLabelH2("What is your nickname?"));
@@ -102,7 +101,6 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-
         panel.add(createLabelH1("Log into your account"));
 
         panel.add(createLabelH2("Email: "));
@@ -192,7 +190,6 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-
         panel.add(createLabelH1("Profile"));
 
         panel.add(createLabelH2("Nickname: " + user.getName()));
@@ -214,8 +211,67 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-
         panel.add(createLabelH1("Settings"));
+
+        // display mode
+        panel.add(createLabelH2("Display mode: "));
+        ButtonGroup displayModeGroup = new ButtonGroup();
+        JRadioButton lightMode = createRadioButton("Light mode", () -> {
+            user.getSettings().setDisplayMode(Settings.DisplayMode.LIGHT_MODE);
+            System.out.println("Display mode changed to light");
+        });
+        JRadioButton darkMode = createRadioButton("Dark mode", () -> {
+            user.getSettings().setDisplayMode(Settings.DisplayMode.DARK_MODE);
+            System.out.println("Display mode changed to dark");
+        });
+        displayModeGroup.add(lightMode);
+        displayModeGroup.add(darkMode);
+        panel.add(lightMode);
+        panel.add(darkMode);
+
+        // accent color
+        panel.add(createLabelH2("Accent color: "));
+        String[] colors = Arrays.stream(MyColor.ColorName.values()).map(Enum::name).toArray(String[]::new);
+        JComboBox<String> accentColor = createComboBox(colors, color -> {
+            user.getSettings().setAccentColor(MyColor.ColorName.valueOf(color));
+            System.out.println("Accent color changed to " + color);
+        });
+        panel.add(accentColor);
+
+        // subject sort mode
+        panel.add(createLabelH2("Sort subjects by: "));
+        ButtonGroup sortGroupButtons = new ButtonGroup();
+        JRadioButton sortAlpha = createRadioButton("Alphabetical order", () -> {
+            user.getSettings().setSubjectSortMode(Settings.SubjectSortMode.ALPHABETICAL);
+            System.out.println("Subjects will now be sorted alphabetically.");
+        });
+        JRadioButton sortGroup = createRadioButton("Subject group", () -> {
+            user.getSettings().setSubjectSortMode(Settings.SubjectSortMode.BY_SUBJECT_GROUP);
+            System.out.println("Subjects will now be sorted by subject group.");
+        });
+        JRadioButton sortLevel = createRadioButton("Subject level", () -> {
+            user.getSettings().setSubjectSortMode(Settings.SubjectSortMode.BY_SUBJECT_LEVEL);
+            System.out.println("Subjects will now be sorted by subject level.");
+        });
+        sortGroupButtons.add(sortAlpha);
+        sortGroupButtons.add(sortGroup);
+        sortGroupButtons.add(sortLevel);
+        panel.add(sortAlpha);
+        panel.add(sortGroup);
+        panel.add(sortLevel);
+
+        // show completed tasks
+        panel.add(createLabelH2("Show completed tasks: "));
+        JToggleButton showCompleted = createJToggleButton(
+                "Show completed",
+                selected -> {
+                    user.getSettings().setShowCompleted(selected);
+                    System.out.println("Show completed tasks: " + selected);
+                },
+                user.getSettings().getShowCompleted()
+        );
+        panel.add(showCompleted);
+
         panel.add(createButton("Return to homepage", e -> {
             mainPanel.add(getHomePagePanel(), "homepage");
             cardLayout.show(mainPanel, "homepage");
@@ -227,8 +283,8 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-
         panel.add(createLabelH1("Subjects"));
+
         panel.add(createButton("Return to homepage", e -> {
             mainPanel.add(getHomePagePanel(), "homepage");
             cardLayout.show(mainPanel, "homepage");
@@ -268,5 +324,20 @@ public class App {
         t.setMaximumSize(new Dimension(textBoxWidth, padding));
         t.setAlignmentX(Component.CENTER_ALIGNMENT);
         return t;
+    }
+    private JRadioButton createRadioButton(String text, Runnable onClick) {
+        JRadioButton r = new JRadioButton(text);
+        r.addActionListener(e -> onClick.run());
+        return r;
+    }
+    private JToggleButton createJToggleButton(String text, Consumer<Boolean> onToggle, boolean initialState) {
+        JToggleButton t = new JToggleButton(text, initialState);
+        t.addItemListener(e -> onToggle.accept(t.isSelected()));
+        return t;
+    }
+    private JComboBox<String> createComboBox(String[] items, Consumer<String> onChange) {
+        JComboBox<String> c = new JComboBox<>(items);
+        c.addActionListener(e -> onChange.accept((String)c.getSelectedItem()));
+        return c;
     }
 }
