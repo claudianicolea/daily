@@ -1,15 +1,24 @@
 package view.panels;
 
-import dao.SubjectDAO;
-import dao.TaskDAO;
+import dao.ExamStudyDAO;
+import dao.HomeworkDAO;
+import dao.InternalAssessmentDAO;
 import main.App;
-import model.Subject;
-import model.Task;
+import model.*;
 import util.ColorUtils;
+import util.data_structures.SubjectLinkedList;
+import util.data_structures.SubjectNode;
+import util.data_structures.TaskLinkedList;
+import util.data_structures.TaskNode;
 import view.dialogs.AddTaskDialog;
+import view.dialogs.EditTaskDialog;
+
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
+import java.time.LocalDate;
+
+import static dao.SubjectDAO.getSubjectsByProfile;
+import static dao.TaskDAO.getTasksBySubject;
 import static main.App.*;
 import static view.UserInterfaceUtils.*;
 
@@ -17,10 +26,6 @@ public class HomePagePanel extends JPanel {
     private final JPanel subjectsListPanel;
     private final JPanel tasksListPanel;
     private final JPanel taskDetailsPanel;
-
-    private final SubjectDAO subjectDAO = new SubjectDAO();
-    private final TaskDAO taskDAO = new TaskDAO();
-
     private Subject selectedSubject = null;
 
     public HomePagePanel(App app) {
@@ -38,9 +43,14 @@ public class HomePagePanel extends JPanel {
         tasksListPanel = new JPanel();
         tasksListPanel.setLayout(new BoxLayout(tasksListPanel, BoxLayout.Y_AXIS));
         center.setLayout(new BorderLayout());
+
         center.add(createButton("Add Task", e -> {
-            AddTaskDialog.showDialog(frame, selectedSubject);
-            refreshTasks();
+            if (selectedSubject == null) {
+                JOptionPane.showMessageDialog(this, "Please select a subject first.");
+            } else {
+                AddTaskDialog.showDialog(frame, selectedSubject);
+                refreshTasks();
+            }
         }), BorderLayout.NORTH);
         center.add(new JScrollPane(tasksListPanel), BorderLayout.CENTER);
 
@@ -63,31 +73,38 @@ public class HomePagePanel extends JPanel {
         add(center, BorderLayout.CENTER);
         add(right, BorderLayout.EAST);
 
-        left.add(createButton("Profile", e -> app.showPanel("profile")), BorderLayout.SOUTH);
-        left.add(createButton("Settings", e -> app.showPanel("settings")), BorderLayout.SOUTH);
-        left.add(createButton("Edit subjects", e -> app.showPanel("subjects")), BorderLayout.SOUTH);
+        JPanel bottomButtons = new JPanel();
+        bottomButtons.setLayout(new BoxLayout(bottomButtons, BoxLayout.Y_AXIS));
+
+        bottomButtons.add(createButton("Profile", e -> app.showPanel("profile")));
+        bottomButtons.add(Box.createVerticalStrut(5));
+        bottomButtons.add(createButton("Settings", e -> app.showPanel("settings")));
+        bottomButtons.add(Box.createVerticalStrut(5));
+        bottomButtons.add(createButton("Edit subjects", e -> app.showPanel("subjects")));
+
+        left.add(bottomButtons, BorderLayout.SOUTH);
 
         refreshSubjects();
     }
 
     private void refreshSubjects() {
         subjectsListPanel.removeAll();
-        List<Subject> subjects = subjectDAO.getSubjectsByProfile(user.getProfileID());
-        for (Subject subject : subjects) {
+        SubjectLinkedList subjects = getSubjectsByProfile(user.getProfileID());
+
+        SubjectNode current = subjects.getHead();
+        while (current != null) {
+            Subject subject = current.value;
+
             JButton btn = createButton(subject.getName(), e -> {
                 selectedSubject = subject;
                 refreshTasks();
             });
+
             subjectsListPanel.add(btn);
+            current = current.next;
         }
         subjectsListPanel.revalidate();
         subjectsListPanel.repaint();
-
-        // auto-select first subject
-        if (!subjects.isEmpty() && selectedSubject == null) {
-            selectedSubject = subjects.get(0);
-            refreshTasks();
-        }
     }
 
     private void refreshTasks() {
@@ -96,10 +113,28 @@ public class HomePagePanel extends JPanel {
 
         if (selectedSubject == null) return;
 
-        List<Task> tasks = taskDAO.getTasksBySubject(selectedSubject.getSubjectID());
-        for (Task task : tasks) {
-            JButton taskButton = createButton(task.getTitle(), e -> showTaskDetails(task));
+        TaskLinkedList tasks = getTasksBySubject(selectedSubject.getSubjectID());
+
+        switch (user.getSettings().getTaskSortMode()) {
+            case ALPHABETICAL -> sortTasksAlphabetically(tasks);
+            case BY_DATE_ADDED -> sortTasksByDate(tasks);
+            case BY_DEADLINE -> sortTasksByDeadline(tasks);
+        }
+
+        TaskNode current = tasks.getHead();
+
+        while (current != null) {
+            Task task = current.value;
+
+            JButton taskButton = null;
+            switch (task.getType()) {
+                case HOMEWORK -> taskButton = createButton(task.getTitle(), e -> showTaskDetails((Homework) task));
+                case INTERNAL_ASSESSMENT -> taskButton = createButton(task.getTitle(), e -> showTaskDetails((InternalAssessment) task));
+                case EXAM_STUDY -> taskButton = createButton(task.getTitle(), e -> showTaskDetails((ExamStudy) task));
+            }
+
             tasksListPanel.add(taskButton);
+            current = current.next;
         }
 
         tasksListPanel.revalidate();
@@ -108,19 +143,132 @@ public class HomePagePanel extends JPanel {
         taskDetailsPanel.repaint();
     }
 
-    private void showTaskDetails(Task task) {
+    // sort tasks alphabetically by title (case-insensitive)
+    private void sortTasksAlphabetically(TaskLinkedList tasks) {
+        for (TaskNode i = tasks.getHead(); i != null; i = i.next) {
+            for (TaskNode j = i.next; j != null; j = j.next) {
+                String a = i.value.getTitle().toLowerCase();
+                String b = j.value.getTitle().toLowerCase();
+
+                if (a.compareTo(b) > 0) {
+                    tasks.swap(i, j);
+                }
+            }
+        }
+    }
+
+    // sort tasks by creation date (ascending)
+    private void sortTasksByDate(TaskLinkedList tasks) {
+        for (TaskNode i = tasks.getHead(); i != null; i = i.next) {
+            for (TaskNode j = i.next; j != null; j = j.next) {
+                if (i.value.getCreatedAt().after(j.value.getCreatedAt())) {
+                    tasks.swap(i, j);
+                }
+            }
+        }
+    }
+
+    // sort tasks by deadline (ascending)
+    private void sortTasksByDeadline(TaskLinkedList tasks) {
+        for (TaskNode i = tasks.getHead(); i != null; i = i.next) {
+            for (TaskNode j = i.next; j != null; j = j.next) {
+                LocalDate a = i.value.getDeadline().toLocalDate();
+                LocalDate b = j.value.getDeadline().toLocalDate();
+
+                if (a.isAfter(b)) {
+                    tasks.swap(i, j);
+                }
+            }
+        }
+    }
+
+    private void showTaskDetails(Homework task) {
         taskDetailsPanel.removeAll();
         taskDetailsPanel.add(createLabelH2("Name: " + task.getTitle()));
-        taskDetailsPanel.add(createLabelH2("Type: " + task.getClass().getSimpleName()));
+        taskDetailsPanel.add(createLabelH2("Type: Homework"));
         taskDetailsPanel.add(createLabelH2("Due: " + task.getDeadline()));
-        taskDetailsPanel.add(createLabelH2("Description: " + task.getDescription()));
+        taskDetailsPanel.add(createLabelH2("Lesson: " + task.getLesson()));
 
         taskDetailsPanel.add(createButton("Edit", e -> {
-            // TODO: implement edit dialog
+            HomeworkDAO.updateTask(task);
+            EditTaskDialog.showDialog(task, frame, selectedSubject);
+            refreshTasks();
         }));
         taskDetailsPanel.add(createButton("Delete", e -> {
-            taskDAO.deleteTask(task.getTaskID());
+            int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure?", "Delete Task", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                HomeworkDAO.deleteTask(task.getTaskID());
+                refreshTasks();
+            }
+        }));
+
+        taskDetailsPanel.revalidate();
+        taskDetailsPanel.repaint();
+    }
+    private void showTaskDetails(InternalAssessment task) {
+        taskDetailsPanel.removeAll();
+        taskDetailsPanel.add(createLabelH2("Name: " + task.getTitle()));
+        taskDetailsPanel.add(createLabelH2("Type: Internal Assessment"));
+        taskDetailsPanel.add(createLabelH2("Due: " + task.getDeadline()));
+        taskDetailsPanel.add(createLabelH2("Writing: " + task.isWriting()));
+        taskDetailsPanel.add(createLabelH2("Experiment: " + task.isExperiment()));
+
+        taskDetailsPanel.add(createButton("Edit", e -> {
+            InternalAssessmentDAO.updateTask(task);
+            EditTaskDialog.showDialog(task, frame, selectedSubject);
             refreshTasks();
+        }));
+        taskDetailsPanel.add(createButton("Delete", e -> {
+            int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure?", "Delete Task", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                InternalAssessmentDAO.deleteTask(task.getTaskID());
+                refreshTasks();
+            }
+        }));
+
+        taskDetailsPanel.revalidate();
+        taskDetailsPanel.repaint();
+    }
+    private void showTaskDetails(ExamStudy task) {
+        taskDetailsPanel.removeAll();
+        taskDetailsPanel.add(createLabelH2("Name: " + task.getTitle()));
+        taskDetailsPanel.add(createLabelH2("Type: Exam Study"));
+        taskDetailsPanel.add(createLabelH2("Due: " + task.getDeadline()));
+
+        String examTypeText = "Paper 1";
+        switch (task.getExamType()) {
+            case PAPER1:
+                examTypeText = "Paper 1";
+                break;
+            case PAPER2:
+                examTypeText = "Paper 2";
+                break;
+            case PAPER3:
+                examTypeText = "Paper 3";
+                break;
+            case INDIVIDUAL_ORAL:
+                examTypeText = "Individual Oral";
+                break;
+            case CLASS_TEST:
+                examTypeText = "Class Test";
+                break;
+            default:
+                break;
+        }
+        taskDetailsPanel.add(createLabelH2("Exam Type: " + examTypeText));
+        taskDetailsPanel.add(createLabelH2("Mock: " + task.isMock()));
+
+        taskDetailsPanel.add(createButton("Edit", e -> {
+            ExamStudyDAO.updateTask(task);
+            EditTaskDialog.showDialog(task, frame, selectedSubject);
+            refreshTasks();
+        }));
+        taskDetailsPanel.add(createButton("Delete", e -> {
+            int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure?", "Delete Task", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                ExamStudyDAO.deleteTask(task.getTaskID());
+                refreshTasks();
+            }
         }));
 
         taskDetailsPanel.revalidate();

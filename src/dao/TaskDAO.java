@@ -2,96 +2,16 @@ package dao;
 
 import model.*;
 import util.DateUtils;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import util.data_structures.TaskLinkedList;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class TaskDAO {
-    public void insertTask(Task task) {
-        String sql = """
-            INSERT INTO task (
-                subjectID,
-                title,
-                deadline,
-                isDone,
-                type,
-                examType,
-                isMock,
-                lesson,
-                section,
-                isExperiment,
-                isWriting
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """;
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement s = conn.prepareStatement(sql)) {
-
-            s.setString(1, task.getSubjectID());
-            s.setString(2, task.getTitle());
-
-            if (task.getDeadline() != null) {
-                s.setDate(4, new java.sql.Date(task.getDeadline().toSqlDate().getTime()));
-            } else {
-                s.setNull(4, Types.DATE);
-            }
-
-            s.setBoolean(5, task.getCompletionStatus());
-
-            // determine type
-            String type;
-            String examType = null;
-            Boolean isMock = null;
-            String lesson = null;
-            String section = null;
-            Boolean isExperiment = null;
-            Boolean isWriting = null;
-
-            if (task instanceof ExamStudy es) {
-                type = "EXAM_STUDY";
-                examType = es.getExamType().name();
-                isMock = es.isMock();
-            } else if (task instanceof Homework hw) {
-                type = "HOMEWORK";
-                lesson = hw.getLesson();
-            } else if (task instanceof InternalAssessment ia) {
-                type = "INTERNAL_ASSESSMENT";
-                section = ia.getSection();
-                isExperiment = ia.isExperiment();
-                isWriting = ia.isWriting();
-            } else {
-                type = "TASK"; // fallback
-            }
-
-            s.setString(6, type);
-            s.setString(7, examType);
-
-            if (isMock != null) s.setBoolean(8, isMock);
-            else s.setNull(8, Types.BOOLEAN);
-
-            s.setString(9, lesson);
-            s.setString(10, section);
-
-            if (isExperiment != null) s.setBoolean(11, isExperiment);
-            else s.setNull(11, Types.BOOLEAN);
-
-            if (isWriting != null) s.setBoolean(12, isWriting);
-            else s.setNull(12, Types.BOOLEAN);
-
-            s.executeUpdate();
-
-            ResultSet generatedKeys = s.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                task.setTaskID(String.valueOf(generatedKeys.getInt(1)));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<Task> getTasksBySubject(String subjectID) {
-        List<Task> tasks = new ArrayList<>();
+    public static TaskLinkedList getTasksBySubject(String subjectID) {
+        TaskLinkedList tasks = new TaskLinkedList();
         String sql = "SELECT * FROM task WHERE subjectID = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -101,40 +21,54 @@ public class TaskDAO {
             ResultSet r = s.executeQuery();
 
             while (r.next()) {
-                String taskID = r.getString("taskID");
-                String title = r.getString("title");
-                String type = r.getString("type");
-                Date deadlineDate = r.getDate("deadline");
-                boolean isDone = r.getBoolean("isDone");
-
-                Task task;
+                Task.TaskType type = Task.TaskType.valueOf(r.getString("type"));
+                Task task = null;
 
                 switch (type) {
-                    case "EXAM_STUDY":
-                        ExamStudy.Assessment examType = ExamStudy.Assessment.valueOf(r.getString("examType"));
-                        boolean isMock = r.getBoolean("isMock");
-                        task = new ExamStudy(taskID, subjectID, title, examType, isMock);
+                    case EXAM_STUDY:
+                        task = new ExamStudy(
+                                r.getString("taskID"),
+                                subjectID,
+                                r.getString("title"),
+                                new DateUtils(r.getDate("deadline")),
+                                ExamStudy.Assessment.valueOf(r.getString("examType")),
+                                r.getBoolean("isMock"),
+                                r.getTimestamp("created_at")
+                        );
                         break;
-                    case "HOMEWORK":
-                        task = new Homework(taskID, subjectID, title);
-                        ((Homework) task).setLesson(r.getString("lesson"));
+
+                    case HOMEWORK:
+                        task = new Homework(
+                                r.getString("taskID"),
+                                subjectID,
+                                r.getString("title"),
+                                new DateUtils(r.getDate("deadline")),
+                                r.getString("lesson"),
+                                r.getTimestamp("created_at")
+                        );
                         break;
-                    case "INTERNAL_ASSESSMENT":
-                        task = new InternalAssessment(taskID, subjectID, title,
-                                r.getBoolean("isExperiment"), r.getBoolean("isWriting"));
-                        ((InternalAssessment) task).setSection(r.getString("section"));
+
+                    case INTERNAL_ASSESSMENT:
+                        task = new InternalAssessment(
+                                r.getString("taskID"),
+                                subjectID,
+                                r.getString("title"),
+                                new DateUtils(r.getDate("deadline")),
+                                r.getString("section"),
+                                r.getBoolean("isExperiment"),
+                                r.getBoolean("isWriting"),
+                                r.getTimestamp("created_at")
+                        );
                         break;
+
                     default:
-                        task = new Task(taskID, subjectID, title);
+                        break;
                 }
 
-                // convert SQL date to DateUtils if exists
-                if (deadlineDate != null) {
-                    task.setDeadline(new DateUtils(deadlineDate));
+                if (task != null) {
+                    task.setCompletionStatus(r.getBoolean("isDone"));
+                    tasks.insertTail(task); // 👈 key change
                 }
-                task.setCompletionStatus(isDone);
-
-                tasks.add(task);
             }
 
         } catch (SQLException e) {
@@ -144,85 +78,8 @@ public class TaskDAO {
         return tasks;
     }
 
-    public void updateTask(Task task) {
-        String sql = """
-            UPDATE Task SET
-                title = ?,
-                deadline = ?,
-                isDone = ?,
-                type = ?,
-                examType = ?,
-                isMock = ?,
-                lesson = ?,
-                section = ?,
-                isExperiment = ?,
-                isWriting = ?
-            WHERE taskID = ?
-            """;
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement s = conn.prepareStatement(sql)) {
-
-            s.setString(1, task.getTitle());
-
-            if (task.getDeadline() != null) {
-                s.setDate(2, new java.sql.Date(task.getDeadline().toSqlDate().getTime()));
-            } else {
-                s.setNull(2, Types.DATE);
-            }
-
-            s.setBoolean(3, task.getCompletionStatus());
-
-            // same logic as insert
-            String type;
-            String examType = null;
-            Boolean isMock = null;
-            String lesson = null;
-            String section = null;
-            Boolean isExperiment = null;
-            Boolean isWriting = null;
-
-            if (task instanceof ExamStudy es) {
-                type = "EXAM_STUDY";
-                examType = es.getExamType().name();
-                isMock = es.isMock();
-            } else if (task instanceof Homework hw) {
-                type = "HOMEWORK";
-                lesson = hw.getLesson();
-            } else if (task instanceof InternalAssessment ia) {
-                type = "INTERNAL_ASSESSMENT";
-                section = ia.getSection();
-                isExperiment = ia.isExperiment();
-                isWriting = ia.isWriting();
-            } else {
-                type = "TASK";
-            }
-
-            s.setString(4, type);
-            s.setString(5, examType);
-
-            if (isMock != null) s.setBoolean(6, isMock);
-            else s.setNull(6, Types.BOOLEAN);
-
-            s.setString(7, lesson);
-            s.setString(8, section);
-
-            if (isExperiment != null) s.setBoolean(9, isExperiment);
-            else s.setNull(9, Types.BOOLEAN);
-
-            if (isWriting != null) s.setBoolean(10, isWriting);
-            else s.setNull(10, Types.BOOLEAN);
-
-            s.setString(11, task.getTaskID());
-
-            s.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteTask(String taskID) {
+    public static void deleteTask(String taskID) {
         String sql = "DELETE FROM task WHERE taskID = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();

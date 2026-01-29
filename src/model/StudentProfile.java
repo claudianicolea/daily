@@ -1,6 +1,7 @@
 package model;
 
 import view.Settings;
+
 import java.util.ArrayList;
 
 public class StudentProfile {
@@ -8,11 +9,11 @@ public class StudentProfile {
     private String settingsID;
     private String name;
     private final String email;
-    private final char[] password;
+    private final String password;
     private Settings settings;
     private ArrayList<Subject> subjects;
 
-    public StudentProfile(String profileID, String settingsID, String name, String email, char[] password) {
+    public StudentProfile(String profileID, String settingsID, String name, String email, String password) {
         this.profileID = profileID;
         this.settingsID = settingsID;
         this.name = name;
@@ -35,10 +36,7 @@ public class StudentProfile {
     public String getEmail() {
         return email;
     }
-    public String showHiddenPassword() {
-        return "*".repeat(password.length);
-    }
-    public char[] getPassword() {
+    public String getPassword() {
         return password;
     }
     public void setSettings(Settings settings) {

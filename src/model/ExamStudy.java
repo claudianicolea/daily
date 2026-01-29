@@ -1,5 +1,9 @@
 package model;
 
+import util.DateUtils;
+
+import java.sql.Timestamp;
+
 public class ExamStudy extends Task {
     public enum Assessment {
         PAPER1,
@@ -12,8 +16,14 @@ public class ExamStudy extends Task {
     private Assessment examType;
     private boolean isMock;
 
-    public ExamStudy(String taskID, String subjectID, String title, Assessment examType, boolean isMock) {
-        super(taskID, subjectID, title);
+    public ExamStudy(String taskID, String subjectID, String title, DateUtils deadline, Assessment examType, boolean isMock) {
+        super(taskID, subjectID, title, deadline, TaskType.EXAM_STUDY);
+        this.examType = examType;
+        this.isMock = isMock;
+    }
+
+    public ExamStudy(String taskID, String subjectID, String title, DateUtils deadline, Assessment examType, boolean isMock, Timestamp createdAt) {
+        super(taskID, subjectID, title, deadline, TaskType.EXAM_STUDY, createdAt);
         this.examType = examType;
         this.isMock = isMock;
     }
@@ -24,7 +34,7 @@ public class ExamStudy extends Task {
     public Assessment getExamType() {
         return examType;
     }
-    public void isMock(boolean isMock) {
+    public void setMock(boolean isMock) {
         this.isMock = isMock;
     }
     public boolean isMock() {

@@ -2,36 +2,25 @@ package dao;
 
 import model.DatabaseConnection;
 import model.Subject;
-import model.Subject.SubjectGroup;
-import model.Subject.SubjectLevel;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import util.data_structures.SubjectLinkedList;
+
+import java.sql.*;
 
 public class SubjectDAO {
-    public void insertSubject(Subject subject, String profileID) {
+    public static void insertSubject(Subject subject, String profileID) {
         String sql = """
             INSERT INTO subject (
                 profileID,
-                name,
-                level,
-                subjectGroup,
-                created_at
+                subjectName
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?)
             """;
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement s = conn.prepareStatement(sql)) {
+             PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             s.setString(1, profileID);
             s.setString(2, subject.getName());
-            s.setString(3, subject.getLevel().name());
-            s.setString(4, subject.getGroup().name());
-            s.setTimestamp(5, subject.getCreatedAt());
 
             s.executeUpdate();
 
@@ -45,8 +34,8 @@ public class SubjectDAO {
         }
     }
 
-    public List<Subject> getSubjectsByProfile(String profileID) {
-        List<Subject> subjects = new ArrayList<>();
+    public static SubjectLinkedList getSubjectsByProfile(String profileID) {
+        SubjectLinkedList subjects = new SubjectLinkedList();
         String sql = "SELECT * FROM subject WHERE profileID = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -59,13 +48,11 @@ public class SubjectDAO {
                 Subject subject = new Subject(
                         r.getString("subjectID"),
                         r.getString("profileID"),
-                        r.getString("name"),
-                        SubjectLevel.valueOf(r.getString("level")),
-                        SubjectGroup.valueOf(r.getString("subjectGroup")),
+                        r.getString("subjectName"),
                         r.getTimestamp("created_at")
                 );
 
-                subjects.add(subject);
+                subjects.insertTail(subject);
             }
 
         } catch (SQLException e) {
@@ -75,12 +62,10 @@ public class SubjectDAO {
         return subjects;
     }
 
-    public void updateSubject(Subject subject) {
+    public static void updateSubject(Subject subject) {
         String sql = """
             UPDATE subject
-            SET name = ?,
-                level = ?,
-                subjectGroup = ?
+            SET subjectName = ?,
             WHERE subjectID = ?
             """;
 
@@ -88,9 +73,7 @@ public class SubjectDAO {
              PreparedStatement s = conn.prepareStatement(sql)) {
 
             s.setString(1, subject.getName());
-            s.setString(2, subject.getLevel().name());
-            s.setString(3, subject.getGroup().name());
-            s.setString(4, subject.getSubjectID());
+            s.setString(2, subject.getSubjectID());
 
             s.executeUpdate();
 
@@ -99,7 +82,7 @@ public class SubjectDAO {
         }
     }
 
-    public void deleteSubject(String subjectID) {
+    public static void deleteSubject(String subjectID) {
         String sql = "DELETE FROM subject WHERE subjectID = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();

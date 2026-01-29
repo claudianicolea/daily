@@ -3,29 +3,26 @@ package dao;
 import model.DatabaseConnection;
 import util.ColorUtils;
 import view.Settings;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SettingsDAO {
-    public void insertSettings(Settings settings) {
+    public static void insertSettings(Settings settings) {
         String sql = """
             INSERT INTO settings (
-                displayMode,
                 accentColor,
-                showCompleted,
-                subjectSortMode
-            ) VALUES (?, ?, ?, ?)
+                taskSortMode
+            ) VALUES (?, ?)
         """;
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement s = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-            s.setString(1, settings.getDisplayMode().name());
-            s.setString(2, settings.getAccentColor().getColorName().name());
-            s.setBoolean(3, settings.getShowCompleted());
-            s.setString(4, settings.getSubjectSortMode().name());
+            s.setString(1, settings.getAccentColor().getColorName().name());
+            s.setString(2, settings.getTaskSortMode().name());
 
             s.executeUpdate();
 
@@ -39,7 +36,7 @@ public class SettingsDAO {
         }
     }
 
-    public Settings getSettingsByID(String settingsID) {
+    public static Settings getSettingsByID(String settingsID) {
         String sql = "SELECT * FROM settings WHERE settingsID = ?";
         Settings settings = null;
 
@@ -51,10 +48,8 @@ public class SettingsDAO {
 
             if (r.next()) {
                 settings = new Settings(settingsID);
-                settings.setDisplayMode(Settings.DisplayMode.valueOf(r.getString("displayMode")));
                 settings.setAccentColor(ColorUtils.ColorName.valueOf(r.getString("accentColor")));
-                settings.setShowCompleted(r.getBoolean("showCompleted"));
-                settings.setSubjectSortMode(Settings.SubjectSortMode.valueOf(r.getString("subjectSortMode")));
+                settings.setTaskSortMode(Settings.TaskSortMode.valueOf(r.getString("taskSortMode")));
             }
 
         } catch (SQLException e) {
@@ -64,24 +59,20 @@ public class SettingsDAO {
         return settings;
     }
 
-    public void updateSettings(Settings settings) {
+    public static void updateSettings(Settings settings) {
         String sql = """
             UPDATE settings
-            SET displayMode = ?,
-                accentColor = ?,
-                showCompleted = ?,
-                subjectSortMode = ?
+            SET accentColor = ?,
+                taskSortMode = ?
             WHERE settingsID = ?
         """;
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement s = conn.prepareStatement(sql)) {
 
-            s.setString(1, settings.getDisplayMode().name());
-            s.setString(2, settings.getAccentColor().getColorName().name());
-            s.setBoolean(3, settings.getShowCompleted());
-            s.setString(4, settings.getSubjectSortMode().name());
-            s.setString(5, settings.getSettingsID());
+            s.setString(1, settings.getAccentColor().getColorName().name());
+            s.setString(2, settings.getTaskSortMode().name());
+            s.setString(3, settings.getSettingsID());
 
             s.executeUpdate();
 
@@ -90,7 +81,7 @@ public class SettingsDAO {
         }
     }
 
-    public void deleteSettings(String settingsID) {
+    public static void deleteSettings(String settingsID) {
         String sql = "DELETE FROM settings WHERE settingsID = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();

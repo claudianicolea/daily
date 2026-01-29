@@ -2,6 +2,7 @@ package main;
 
 import model.StudentProfile;
 import view.panels.*;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -41,12 +42,6 @@ public class App {
         switch (name) {
             case "welcome":
                 mainPanel.add(new WelcomePanel(this), "welcome");
-                break;
-            case "signup":
-                mainPanel.add(new SignUpPanel(this), "signup");
-                break;
-            case "login":
-                mainPanel.add(new LogInPanel(this), "login");
                 break;
             case "homepage":
                 mainPanel.add(new HomePagePanel(this), "homepage");

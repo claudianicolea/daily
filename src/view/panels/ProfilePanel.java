@@ -2,14 +2,16 @@ package view.panels;
 
 import dao.StudentProfileDAO;
 import main.App;
-import view.dialogs.EditNicknameDialog;
+
 import javax.swing.*;
-import static main.App.*;
+
+import static main.App.padding;
+import static main.App.user;
 import static view.UserInterfaceUtils.*;
 
 public class ProfilePanel extends JPanel {
 
-    private JLabel nicknameLabel; // dynamic label reference
+    private JLabel nicknameLabel;
 
     public ProfilePanel(App app) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -19,14 +21,19 @@ public class ProfilePanel extends JPanel {
         nicknameLabel = createLabelH2("Nickname: " + user.getName());
         add(nicknameLabel);
 
-        add(createButton("Edit nickname", e -> {
-            String newNickname = EditNicknameDialog.showDialog(frame);
-            if (newNickname != null && !newNickname.isEmpty() && !newNickname.equals(user.getName())) {
-                nicknameLabel.setText("Nickname: " + newNickname);
-                StudentProfileDAO dao = new StudentProfileDAO();
-                dao.updateStudentProfile(user);
+        JButton editButton = createButton("Edit", e -> {
+            String newNickname = JOptionPane.showInputDialog(this, "Enter new nickname:", user.getName());
+
+            if (newNickname != null && !newNickname.isEmpty()) {
+                user.setName(newNickname);
+                StudentProfileDAO.updateStudentProfile(user);
+                nicknameLabel.setText("Nickname: " + user.getName());
+                revalidate();
+                repaint();
             }
-        }));
+        });
+        add(editButton);
+
 
         add(createLabelH2("Email address: " + user.getEmail()));
         add(createButton("Return to homepage", e -> app.showPanel("homepage")));

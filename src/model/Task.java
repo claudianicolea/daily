@@ -1,7 +1,8 @@
 package model;
 
 import util.DateUtils;
-import java.util.ArrayList;
+
+import java.sql.Timestamp;
 
 public class Task {
     public enum TaskType {
@@ -13,18 +14,28 @@ public class Task {
     private String taskID;
     private String subjectID;
     private String title;
-    private String description;
     private DateUtils deadline;
-    private ArrayList<Subtask> subtasks;
     private boolean isDone;
+    private TaskType type;
+    private Timestamp createdAt;
 
-    public Task(String taskID, String subjectID, String title) {
+    public Task(String taskID, String subjectID, String title, DateUtils deadline, TaskType type) {
         this.taskID = taskID;
         this.subjectID = subjectID;
         this.title = title;
-        deadline = null;
-        subtasks = new ArrayList<>();
+        this.deadline = deadline;
         isDone = false;
+        this.type = type;
+    }
+
+    public Task(String taskID, String subjectID, String title, DateUtils deadline, TaskType type, Timestamp createdAt) {
+        this.taskID = taskID;
+        this.subjectID = subjectID;
+        this.title = title;
+        this.deadline = deadline;
+        isDone = false; // TODO: Implement checking off items when completed
+        this.type = type;
+        this.createdAt = createdAt;
     }
 
     public void setTaskID(String taskID) { this.taskID = taskID; }
@@ -37,23 +48,11 @@ public class Task {
     public String getTitle() {
         return title;
     }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    public String getDescription() {
-        return description;
-    }
     public void setDeadline(DateUtils deadline) {
         this.deadline = deadline;
     }
     public DateUtils getDeadline() {
         return deadline;
-    }
-    public void addSubtask(Subtask subtask) {
-        subtasks.add(subtask);
-    }
-    public void removeSubtask(Subtask subtask) {
-        subtasks.remove(subtask);
     }
     public void setCompletionStatus(boolean isDone) {
         this.isDone = isDone;
@@ -61,4 +60,7 @@ public class Task {
     public boolean getCompletionStatus() {
         return isDone;
     }
+    public void setType(TaskType type) { this.type = type; }
+    public TaskType getType() { return type; }
+    public Timestamp getCreatedAt() { return createdAt; }
 }

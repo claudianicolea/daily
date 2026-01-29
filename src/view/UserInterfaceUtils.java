@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.function.Consumer;
+
 import static main.App.padding;
 import static main.App.textBoxWidth;
 
