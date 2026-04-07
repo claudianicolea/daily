@@ -14,6 +14,16 @@ public class SettingsPage extends JPanel {
         title.setAlignmentX(CENTER_ALIGNMENT);
         add(title);
 
+        // accent color
+        JLabel accentColorLabel = new JLabel("Choose accent color: ");
+        accentColorLabel.setAlignmentX(CENTER_ALIGNMENT);
+        add(accentColorLabel);
+
+        // task sort mode
+        JLabel taskSortModeLabel = new JLabel("Choose task sorting mode: ");
+        taskSortModeLabel.setAlignmentX(CENTER_ALIGNMENT);
+        add(taskSortModeLabel);
+
         // button to return to homepage
         JButton homepageBtn = new JButton("Return");
         homepageBtn.addActionListener(e -> {

@@ -11,7 +11,7 @@ public class Settings {
 
     public Settings() {
         settingsID = null;
-        accentColor = Color.GRAY;
+        accentColor = Color.LIGHT_GRAY;
         taskSortMode = TaskSortMode.CREATION_DATE;
     }
 

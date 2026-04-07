@@ -26,7 +26,7 @@ public class ProfilePage extends JPanel {
 
         JButton editBtn = new JButton("Edit");
         editBtn.addActionListener(e -> {
-            String newName = JOptionPane.showInputDialog(this,
+            String newName = JOptionPane.showInputDialog(null,
                     "Enter new name:",
                     user.getName()
             );

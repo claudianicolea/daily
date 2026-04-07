@@ -77,11 +77,9 @@ public class SubjectsPage extends JPanel {
 
             JButton editBtn = new JButton("Edit");
             editBtn.addActionListener(e -> {
-                String newSubjectName = JOptionPane.showInputDialog(
-                        null,
-                        "Subject name:",
-                        "Edit subject",
-                        JOptionPane.PLAIN_MESSAGE
+                String newSubjectName = JOptionPane.showInputDialog(null,
+                        "Enter new subject name:",
+                        s.getName()
                 );
                 if (newSubjectName.isEmpty()) {
                     JOptionPane.showMessageDialog(

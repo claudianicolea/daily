@@ -7,7 +7,6 @@ import model.*;
 import util.*;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.time.LocalDate;
 
@@ -68,8 +67,10 @@ public class HomePage extends JPanel {
 
         refreshTasks(tasks, details);
         center.add(addTaskBtn, BorderLayout.NORTH);
-        center.add(new JScrollPane(tasks), BorderLayout.CENTER);
-        center.setBackground(Color.WHITE);
+        JScrollPane tasksScrollPane = new JScrollPane(tasks);
+        tasksScrollPane.setBackground(Color.WHITE);
+        center.add(tasksScrollPane, BorderLayout.CENTER);
+        center.setBackground(user.getSettings().getAccentColor());
 
         // right - task details
 
@@ -81,6 +82,11 @@ public class HomePage extends JPanel {
         right.add(titleD, BorderLayout.NORTH);
 
         right.add(new JScrollPane(details), BorderLayout.CENTER);
+
+        JButton editTaskBtn = new JButton("Edit");
+        editTaskBtn.addActionListener(e -> showEditTaskDialog(tasks, details));
+        right.add(editTaskBtn, BorderLayout.SOUTH);
+
         right.setBackground(user.getSettings().getAccentColor());
         right.setPreferredSize(new Dimension(200, 0));
 
@@ -88,7 +94,7 @@ public class HomePage extends JPanel {
 
         JPanel bottom = new JPanel();
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
-        bottom.setBackground(Color.WHITE);
+        bottom.setBackground(user.getSettings().getAccentColor());
 
         JButton profileBtn = new JButton("Profile");
         profileBtn.addActionListener(e -> {
@@ -127,27 +133,23 @@ public class HomePage extends JPanel {
         LinkedList tasks = TaskDAO.getTasksBySubject(selectedSubject.getSubjectID());
 
         switch (user.getSettings().getTaskSortMode()) {
-            case ALPHABETICAL -> sortByAlphabet(tasks);
-            case CREATION_DATE -> sortByCreationDate(tasks);
-            case DEADLINE -> sortByDeadline(tasks);
+            case ALPHABETICAL -> tasks.sortTasksByAlphabet();
+            case CREATION_DATE -> tasks.sortTasksByCreationDate();
+            case DEADLINE -> tasks.sortTasksByDeadline();
         }
 
         ButtonGroup group = new ButtonGroup();
 
         Node it = tasks.getHead();
-        boolean first = true;
+        Task firstTask = null;
+        JRadioButton firstBtn = null;
 
         while (it != null) {
             Task t = it.getTaskValue();
 
             JRadioButton taskBtn = new JRadioButton(t.getTitle() + " (" + t.getRelativeDeadline() + ")");
             group.add(taskBtn);
-
-            taskBtn.setOpaque(true);
-            taskBtn.setContentAreaFilled(true);
-            taskBtn.setForeground(Color.BLACK);
             taskBtn.setAlignmentX(CENTER_ALIGNMENT);
-            taskBtn.setFocusPainted(false);
 
             if (t.getDeadline().toLocalDate().isBefore(LocalDate.now())) {
                 taskBtn.setForeground(Color.LIGHT_GRAY);
@@ -157,24 +159,40 @@ public class HomePage extends JPanel {
                 selectedTask = t;
                 detailsPanel.removeAll();
                 t.showDetails(detailsPanel);
-                updateRadioStyles(tasksPanel);
-
                 detailsPanel.revalidate();
                 detailsPanel.repaint();
             });
 
-            if (first) {
+            // remember first task
+            if (firstTask == null) {
+                firstTask = t;
+                firstBtn = taskBtn;
+            }
+
+            // restore task selection
+            if (selectedTask != null && t.getTaskID().equals(selectedTask.getTaskID())) {
                 taskBtn.setSelected(true);
                 selectedTask = t;
+                detailsPanel.removeAll();
                 t.showDetails(detailsPanel);
-                first = false;
+                detailsPanel.revalidate();
+                detailsPanel.repaint();
             }
 
             tasksPanel.add(taskBtn);
             it = it.getNext();
         }
 
-        updateRadioStyles(tasksPanel);
+        // if there was no previously selected task, select the first one
+        if (group.getSelection() == null && firstTask != null) {
+            firstBtn.setSelected(true);
+            selectedTask = firstTask;
+
+            detailsPanel.removeAll();
+            firstTask.showDetails(detailsPanel);
+            detailsPanel.revalidate();
+            detailsPanel.repaint();
+        }
 
         tasksPanel.revalidate();
         tasksPanel.repaint();
@@ -194,16 +212,10 @@ public class HomePage extends JPanel {
             JRadioButton subjectBtn = new JRadioButton(s.getName());
             group.add(subjectBtn);
 
-            subjectBtn.setOpaque(true);
-            subjectBtn.setContentAreaFilled(true);
-            subjectBtn.setForeground(Color.BLACK);
             subjectBtn.setAlignmentX(CENTER_ALIGNMENT);
-            subjectBtn.setFocusPainted(false);
-
             subjectBtn.addActionListener(e -> {
                 selectedSubject = s;
                 refreshTasks(tasksPanel, detailsPanel);
-                updateRadioStyles(subjectsPanel);
             });
 
             if (selectedSubject == null) {
@@ -216,37 +228,10 @@ public class HomePage extends JPanel {
             it = it.getNext();
         }
 
-        updateRadioStyles(subjectsPanel);
-
         subjectsPanel.revalidate();
         subjectsPanel.repaint();
         subjectsPanel.setBackground(Color.WHITE);
         return selectedSubject;
-    }
-
-    private void updateRadioStyles(JPanel panel) {
-        for (Component comp : panel.getComponents()) {
-
-            if (comp instanceof JPanel inner) {
-                for (Component c : inner.getComponents()) {
-                    if (c instanceof JRadioButton rb) {
-                        if (rb.isSelected()) {
-                            rb.setBackground(user.getSettings().getAccentColor());
-                        } else {
-                            rb.setBackground(Color.WHITE);
-                        }
-                    }
-                }
-            }
-
-            if (comp instanceof JRadioButton rb) {
-                if (rb.isSelected()) {
-                    rb.setBackground(user.getSettings().getAccentColor());
-                } else {
-                    rb.setBackground(Color.WHITE);
-                }
-            }
-        }
     }
 
     private void showAddTaskDialog(JPanel tasksPanel, JPanel detailsPanel) {
@@ -380,7 +365,8 @@ public class HomePage extends JPanel {
                 }
                 dialog.dispose();
                 refreshTasks(tasksPanel, detailsPanel);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 JOptionPane.showMessageDialog(dialog, "Error adding task: " + ex.getMessage());
             }
         });
@@ -393,24 +379,148 @@ public class HomePage extends JPanel {
         dialog.setVisible(true);
     }
 
-    //TODO edit task
-    private void showEditTaskDialog() {
+    private void showEditTaskDialog(JPanel tasksPanel, JPanel detailsPanel) {
+        JDialog dialog = new JDialog();
+        dialog.setPreferredSize(new Dimension(400, 300));
+        dialog.setLocationRelativeTo(null);
+        dialog.setTitle("Edit Task");
+        dialog.setModal(true);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-    }
 
-    //TODO Sort by alphabet
-    private void sortByAlphabet(LinkedList ll) {
+        // general
 
-    }
+        panel.add(new JLabel("Title:"));
+        JTextField titleField = new JTextField(20);
+        titleField.setText(selectedTask.getTitle());
+        panel.add(titleField);
 
-    //TODO Sort by deadline
-    private void sortByDeadline(LinkedList ll) {
+        panel.add(new JLabel("Deadline:"));
+        JDateChooser dateChooser = new JDateChooser();
+        dateChooser.setDate(new java.util.Date());
+        dateChooser.setDateFormatString("dd-MM-yyyy");
+        dateChooser.setDate(selectedTask.getDeadline());
+        panel.add(dateChooser);
 
-    }
+        // homework
 
-    //TODO Sort by creation date
-    private void sortByCreationDate(LinkedList ll) {
+        JPanel homeworkPanel = new JPanel();
+        homeworkPanel.setLayout(new BoxLayout(homeworkPanel, BoxLayout.Y_AXIS));
 
+        homeworkPanel.add(new JLabel("Lesson:"));
+        JTextField lessonField = new JTextField(20);
+        homeworkPanel.add(lessonField);
+
+        // IA
+
+        JPanel IAPanel = new JPanel();
+        IAPanel.setLayout(new BoxLayout(IAPanel, BoxLayout.Y_AXIS));
+
+        IAPanel.add(new JLabel("Section:"));
+        JTextField sectionField = new JTextField(20);
+        IAPanel.add(sectionField);
+
+        JToggleButton isExperimentToggle = new JToggleButton("Experiment");
+        JToggleButton isWritingToggle = new JToggleButton("Writing");
+        IAPanel.add(isExperimentToggle);
+        IAPanel.add(isWritingToggle);
+
+        // exam
+
+        JPanel examPanel = new JPanel();
+        examPanel.setLayout(new BoxLayout(examPanel, BoxLayout.Y_AXIS));
+
+        examPanel.add(new JLabel("Assessment type:"));
+        JComboBox<Assessment> examTypeCombo = new JComboBox<>(Assessment.values());
+        examPanel.add(examTypeCombo);
+
+        JToggleButton isMockToggle = new JToggleButton("Mock");
+        examPanel.add(isMockToggle);
+
+        // add subpanels
+
+        panel.add(homeworkPanel);
+        panel.add(IAPanel);
+        panel.add(examPanel);
+
+        homeworkPanel.setVisible(false);
+        IAPanel.setVisible(false);
+        examPanel.setVisible(false);
+
+        if (selectedTask instanceof Homework hw) {
+            homeworkPanel.setVisible(true);
+            lessonField.setText(hw.getLesson());
+        }
+        else if (selectedTask instanceof IA ia) {
+            IAPanel.setVisible(true);
+            sectionField.setText(ia.getSection());
+            isExperimentToggle.setSelected(ia.isExperiment());
+            isWritingToggle.setSelected(ia.isWriting());
+        }
+        else if (selectedTask instanceof Exam es) {
+            examPanel.setVisible(true);
+            examTypeCombo.setSelectedItem(es.getAssessmentType());
+            isMockToggle.setSelected(es.isMock());
+        }
+
+        // buttons
+
+        JPanel buttonPanel = new JPanel();
+
+        JButton editBtn = new JButton("Edit");
+        JButton cancelBtn = new JButton("Cancel");
+
+        buttonPanel.add(editBtn);
+        buttonPanel.add(cancelBtn);
+
+        panel.add(buttonPanel);
+        dialog.getRootPane().setDefaultButton(editBtn);
+
+        // logic
+
+        editBtn.addActionListener(e -> {
+            String title = titleField.getText().trim();
+            java.sql.Date dueDate = new java.sql.Date(dateChooser.getDate().getTime());
+
+            if (title.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
+                return;
+            }
+
+            selectedTask.setTitle(title);
+            selectedTask.setDeadline(dueDate);
+
+            try {
+                if (selectedTask instanceof Homework) {
+                    ((Homework) selectedTask).setLesson((lessonField.getText() == null) ? null : lessonField.getText().trim());
+                    HomeworkDAO.updateTask((Homework) selectedTask);
+                }
+                else if (selectedTask instanceof IA) {
+                    ((IA) selectedTask).setSection((sectionField.getText() == null) ? null : sectionField.getText().trim());
+                    IADAO.updateTask((IA) selectedTask);
+                }
+                else if (selectedTask instanceof Exam) {
+                    if (examTypeCombo.getSelectedItem() == null) {
+                        JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
+                        return;
+                    }
+                    ((Exam) selectedTask).setAssessmentType((Assessment) examTypeCombo.getSelectedItem());
+                    ExamDAO.updateTask((Exam) selectedTask);
+                }
+                dialog.dispose();
+                refreshTasks(tasksPanel, detailsPanel);
+            }
+            catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Error editing task: " + ex.getMessage());
+            }
+        });
+        cancelBtn.addActionListener(e -> dialog.dispose());
+
+        // dialog
+        dialog.add(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
     }
 }
