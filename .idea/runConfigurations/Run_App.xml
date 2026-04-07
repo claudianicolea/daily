@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run App" type="Application" factoryName="Application">
+    <envs>
+      <env name="DB_URL" value="jdbc:mysql://localhost:3306/dailydb" />
+      <env name="DB_USER" value="dailyuser" />
+      <env name="DB_PASSWORD" value="d1a2i3l4y" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="main.Main" />
+    <module name="daily" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
