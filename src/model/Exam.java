@@ -1,5 +1,7 @@
 package model;
 
+import ui.elements.BodyText;
+import ui.elements.Button;
 import util.Assessment;
 import util.TaskType;
 
@@ -34,18 +36,11 @@ public class Exam extends Task {
     public void showDetails(JPanel panel) {
         super.showDetails(panel);
 
-        JLabel t = new JLabel("Type: Exam");
-        t.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(t);
-
-        JLabel type = new JLabel("Assessment: " + getAssessmentType());
-        type.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(type);
+        panel.add(new BodyText("Type: Exam"));
+        panel.add(new BodyText("Assessment: " + getAssessmentType()));
 
         if (isMock()) {
-            JLabel mock = new JLabel("Mock exam");
-            mock.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(mock);
+            panel.add(new BodyText("Mock exam"));
         }
     }
 }

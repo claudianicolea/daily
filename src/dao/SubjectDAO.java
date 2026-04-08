@@ -36,7 +36,7 @@ public class SubjectDAO {
 
     public static LinkedList getSubjectsByProfile(String profileID) {
         LinkedList subjects = new LinkedList();
-        String sql = "SELECT * FROM subjects WHERE profileID = ?";
+        String sql = "SELECT * FROM subjects WHERE profileID = ? ORDER BY timestamp ASC";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement s = conn.prepareStatement(sql)) {

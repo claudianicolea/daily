@@ -1,5 +1,6 @@
 package model;
 
+import ui.elements.BodyText;
 import util.TaskType;
 
 import javax.swing.*;
@@ -43,26 +44,18 @@ public class IA extends Task {
     public void showDetails(JPanel panel) {
         super.showDetails(panel);
 
-        JLabel type = new JLabel("Type: Internal Assessment");
-        type.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(type);
+        panel.add(new BodyText("Type: Internal Assessment"));
 
         if (!getSection().isEmpty()) {
-            JLabel section = new JLabel("Section: " + getSection());
-            section.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(section);
+            panel.add(new BodyText("Section: " + getSection()));
         }
 
         if (isExperiment()) {
-            JLabel exp = new JLabel("Experiment part");
-            exp.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(exp);
+            panel.add(new BodyText("Experiment part"));
         }
 
         if (isWriting()) {
-            JLabel writing = new JLabel("Writing part");
-            writing.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(writing);
+            panel.add(new BodyText("Writing part"));
         }
     }
 }

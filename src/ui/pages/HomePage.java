@@ -1,9 +1,12 @@
-package ui;
+package ui.pages;
 
 import com.toedter.calendar.JDateChooser;
 import dao.*;
 import main.Main;
 import model.*;
+import ui.elements.*;
+import ui.elements.Button;
+import ui.elements.Dialog;
 import util.*;
 
 import javax.swing.*;
@@ -28,9 +31,11 @@ public class HomePage extends JPanel {
         JPanel left = new JPanel();
         left.setLayout(new BorderLayout());
 
-        JLabel titleS = new JLabel("Subjects");
-        titleS.setAlignmentX(CENTER_ALIGNMENT);
-        left.add(titleS, BorderLayout.NORTH);
+        JPanel subjectsTitlePanel = new JPanel();
+        subjectsTitlePanel.add(new Title("Subjects"));
+        subjectsTitlePanel.setBackground(settings.getAccentColor());
+        subjectsTitlePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.GRAY));
+        left.add(subjectsTitlePanel, BorderLayout.NORTH);
 
         left.add(new JScrollPane(subjects), BorderLayout.CENTER);
         left.setBackground(settings.getAccentColor());
@@ -52,66 +57,81 @@ public class HomePage extends JPanel {
         JPanel center = new JPanel();
         center.setLayout(new BorderLayout());
 
-        JButton addTaskBtn = new JButton("Add task");
-        addTaskBtn.addActionListener(e -> {
-            if (selectedSubject == null) {
-                JOptionPane.showMessageDialog(null,
-                        "Please select a subject first!",
-                        "Warning",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-            refreshTasks(tasks, details);
-            showAddTaskDialog(tasks, details);
-        });
+        JPanel tasksTitlePanel = new JPanel();
+        tasksTitlePanel.add(new Title("Tasks"));
+        tasksTitlePanel.setBackground(settings.getAccentColor());
+        tasksTitlePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.GRAY));
+        center.add(tasksTitlePanel, BorderLayout.NORTH);
+
+        JPanel center2 = new JPanel();
+        center2.setLayout(new BorderLayout());
 
         refreshTasks(tasks, details);
-        center.add(addTaskBtn, BorderLayout.NORTH);
+        center2.add(new Button(
+                "Add task",
+                e -> {
+                    if (selectedSubject == null) {
+                        Dialog.showWarning(
+                                "Please select a subject first!",
+                                "Warning"
+                        );
+                        return;
+                    }
+
+                    refreshTasks(tasks, details);
+                    showAddTaskDialog(tasks, details);
+                }
+        ), BorderLayout.NORTH);
+
         JScrollPane tasksScrollPane = new JScrollPane(tasks);
         tasksScrollPane.setBackground(Color.WHITE);
-        center.add(tasksScrollPane, BorderLayout.CENTER);
+        center2.add(tasksScrollPane, BorderLayout.CENTER);
+        center2.setBackground(Color.WHITE);
+
         center.setBackground(settings.getAccentColor());
+        center.add(center2, BorderLayout.CENTER);
 
         // right - task details
 
         JPanel right = new JPanel();
         right.setLayout(new BorderLayout());
 
-        JLabel titleD = new JLabel("Details");
-        titleD.setAlignmentX(CENTER_ALIGNMENT);
-        right.add(titleD, BorderLayout.NORTH);
+        JPanel detailsTitlePanel = new JPanel();
+        detailsTitlePanel.add(new Title("Details"));
+        detailsTitlePanel.setBackground(settings.getAccentColor());
+        detailsTitlePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.GRAY));
+        right.add(detailsTitlePanel, BorderLayout.NORTH);
 
         right.add(new JScrollPane(details), BorderLayout.CENTER);
 
         JPanel taskButtons = new JPanel();
 
-        JButton editTaskBtn = new JButton("Edit");
-        editTaskBtn.addActionListener(e -> showEditTaskDialog(tasks, details));
-        taskButtons.add(editTaskBtn);
+        // edit task
+        taskButtons.add(new Button(
+                "Edit",
+                e -> showEditTaskDialog(tasks, details)
+        ));
 
-        JButton deleteTaskBtn = new JButton("Delete");
-        deleteTaskBtn.addActionListener(e -> {
-            if (selectedTask == null) {
-                JOptionPane.showMessageDialog(null,
-                        "Please select a task first!",
-                        "Warning",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-            int confirm = JOptionPane.showConfirmDialog(
-                    null,
-                    "Are you sure you want to delete " + selectedTask.getTitle() + "?",
-                    "Delete Task",
-                    JOptionPane.YES_NO_OPTION
-            );
-            if (confirm == JOptionPane.YES_OPTION) {
-                TaskDAO.deleteTask(selectedTask.getTaskID());
-                refreshTasks(tasks, details);
-            }
-        });
-        taskButtons.add(deleteTaskBtn);
+        // delete task
+        taskButtons.add(new Button(
+                "Delete",
+                e -> {
+                    if (selectedTask == null) {
+                        Dialog.showWarning("Please select a task first!", "Warning");
+                        return;
+                    }
+
+                    int confirm = Dialog.showConfirm(
+                            "Are you sure you want to delete " + selectedTask.getTitle() + "?",
+                            "Delete Task"
+                    );
+
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        TaskDAO.deleteTask(selectedTask.getTaskID());
+                        refreshTasks(tasks, details);
+                    }
+                }
+        ));
 
         right.add(taskButtons, BorderLayout.SOUTH);
         right.setBackground(settings.getAccentColor());
@@ -120,29 +140,11 @@ public class HomePage extends JPanel {
         // bottom - buttons to profile, settings, subjects
 
         JPanel bottom = new JPanel();
-        bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
         bottom.setBackground(settings.getAccentColor());
 
-        JButton profileBtn = new JButton("Profile");
-        profileBtn.addActionListener(e -> {
-            Main.showPanel(Page.PROFILE);
-        });
-        profileBtn.setAlignmentX(CENTER_ALIGNMENT);
-        bottom.add(profileBtn);
-
-        JButton settingsBtn = new JButton("Settings");
-        settingsBtn.addActionListener(e -> {
-            Main.showPanel(Page.SETTINGS);
-        });
-        settingsBtn.setAlignmentX(CENTER_ALIGNMENT);
-        bottom.add(settingsBtn);
-
-        JButton subjectsBtn = new JButton("Subjects");
-        subjectsBtn.addActionListener(e -> {
-            Main.showPanel(Page.SUBJECTS);
-        });
-        subjectsBtn.setAlignmentX(CENTER_ALIGNMENT);
-        bottom.add(subjectsBtn);
+        bottom.add(new Button("Profile", e -> Main.showPanel(Page.PROFILE), true));
+        bottom.add(new Button("Settings", e -> Main.showPanel(Page.SETTINGS), true));
+        bottom.add(new Button("Subjects", e -> Main.showPanel(Page.SUBJECTS), true));
 
         // add each panel
         add(left, BorderLayout.WEST);
@@ -172,14 +174,13 @@ public class HomePage extends JPanel {
 
         Node it = tasks.getHead();
         Task firstTask = null;
-        JRadioButton firstBtn = null;
+        RadioButton firstBtn = null;
 
         while (it != null) {
             Task t = it.getTaskValue();
 
-            JRadioButton taskBtn = new JRadioButton(t.getTitle() + " (" + t.getRelativeDeadline() + ")");
+            RadioButton taskBtn = new RadioButton(t.getTitle() + " (" + t.getRelativeDeadline() + ")");
             group.add(taskBtn);
-            taskBtn.setAlignmentX(CENTER_ALIGNMENT);
 
             if (t.getDeadline().toLocalDate().isBefore(LocalDate.now())) {
                 taskBtn.setForeground(Color.LIGHT_GRAY);
@@ -213,15 +214,29 @@ public class HomePage extends JPanel {
             it = it.getNext();
         }
 
-        // if there was no previously selected task, select the first one
-        if (group.getSelection() == null && firstTask != null && !firstTask.getDeadline().toLocalDate().isBefore(LocalDate.now())) {
-            firstBtn.setSelected(true);
-            selectedTask = firstTask;
+        // if there was no previously selected task, select the first one that is due
+        if (group.getSelection() == null) {
+            Node it2 = tasks.getHead();
+            while (it2 != null) {
+                Task t = it2.getTaskValue();
+                if (!t.getDeadline().toLocalDate().isBefore(LocalDate.now())) {
 
-            detailsPanel.removeAll();
-            firstTask.showDetails(detailsPanel);
-            detailsPanel.revalidate();
-            detailsPanel.repaint();
+                    // find button
+                    for (Component comp : tasksPanel.getComponents()) {
+                        if (comp instanceof RadioButton btn && btn.getText().startsWith(t.getTitle())) {
+                            btn.setSelected(true);
+                            selectedTask = t;
+                            detailsPanel.removeAll();
+                            t.showDetails(detailsPanel);
+                            detailsPanel.revalidate();
+                            detailsPanel.repaint();
+                            break;
+                        }
+                    }
+                    break;
+                }
+                it2 = it2.getNext();
+            }
         }
 
         tasksPanel.revalidate();
@@ -239,10 +254,9 @@ public class HomePage extends JPanel {
         while (it != null) {
             Subject s = it.getSubjectValue();
 
-            JRadioButton subjectBtn = new JRadioButton(s.getName());
+            RadioButton subjectBtn = new RadioButton(s.getName());
             group.add(subjectBtn);
 
-            subjectBtn.setAlignmentX(CENTER_ALIGNMENT);
             subjectBtn.addActionListener(e -> {
                 selectedSubject = s;
                 refreshTasks(tasksPanel, detailsPanel);
@@ -276,15 +290,15 @@ public class HomePage extends JPanel {
 
         // general
 
-        panel.add(new JLabel("Title:"));
+        panel.add(new BodyText("Title:"));
         JTextField titleField = new JTextField(20);
         panel.add(titleField);
 
-        panel.add(new JLabel("Type:"));
+        panel.add(new BodyText("Type:"));
         JComboBox<TaskType> taskTypeCombo = new JComboBox<>(TaskType.values());
         panel.add(taskTypeCombo);
 
-        panel.add(new JLabel("Deadline:"));
+        panel.add(new BodyText("Deadline:"));
         JDateChooser dateChooser = new JDateChooser();
         dateChooser.setDate(new java.util.Date());
         dateChooser.setDateFormatString("dd-MM-yyyy");
@@ -295,7 +309,7 @@ public class HomePage extends JPanel {
         JPanel homeworkPanel = new JPanel();
         homeworkPanel.setLayout(new BoxLayout(homeworkPanel, BoxLayout.Y_AXIS));
 
-        homeworkPanel.add(new JLabel("Lesson:"));
+        homeworkPanel.add(new BodyText("Lesson:"));
         JTextField lessonField = new JTextField(20);
         homeworkPanel.add(lessonField);
 
@@ -304,7 +318,7 @@ public class HomePage extends JPanel {
         JPanel IAPanel = new JPanel();
         IAPanel.setLayout(new BoxLayout(IAPanel, BoxLayout.Y_AXIS));
 
-        IAPanel.add(new JLabel("Section:"));
+        IAPanel.add(new BodyText("Section:"));
         JTextField sectionField = new JTextField(20);
         IAPanel.add(sectionField);
 
@@ -318,7 +332,7 @@ public class HomePage extends JPanel {
         JPanel examPanel = new JPanel();
         examPanel.setLayout(new BoxLayout(examPanel, BoxLayout.Y_AXIS));
 
-        examPanel.add(new JLabel("Assessment type:"));
+        examPanel.add(new BodyText("Assessment type:"));
         JComboBox<Assessment> examTypeCombo = new JComboBox<>(Assessment.values());
         examPanel.add(examTypeCombo);
 
@@ -353,56 +367,66 @@ public class HomePage extends JPanel {
 
         JPanel buttonPanel = new JPanel();
 
-        JButton addBtn = new JButton("Add");
-        JButton cancelBtn = new JButton("Cancel");
+        buttonPanel.add(new Button(
+                "Cancel",
+                e -> dialog.dispose()
+        ));
+        Button addBtn = new Button(
+                "Add",
+                e -> {
+                    String title = titleField.getText().trim();
+                    java.sql.Date dueDate = new java.sql.Date(dateChooser.getDate().getTime());
+                    TaskType selected = (TaskType) taskTypeCombo.getSelectedItem();
 
+                    if (title.isEmpty() || selected == null) {
+                        Dialog.showWarning(
+                                "Please fill in all required fields!",
+                                "Warning"
+                        );
+                        return;
+                    }
+
+                    try {
+                        switch (selected) {
+                            case HOMEWORK:
+                                String lesson = (lessonField.getText() == null) ? null : lessonField.getText().trim();
+                                HomeworkDAO.insertTask(new Homework(null, title, dueDate, TaskType.HOMEWORK, null, lesson), selectedSubject.getSubjectID());
+                                break;
+
+                            case IA:
+                                String section = (sectionField.getText() == null) ? null : sectionField.getText().trim();
+                                IADAO.insertTask(new IA(null, title, dueDate, TaskType.IA, null, section, isExperimentToggle.isSelected(), isWritingToggle.isSelected()), selectedSubject.getSubjectID());
+                                break;
+
+                            case EXAM:
+                                Assessment examType = (Assessment) examTypeCombo.getSelectedItem();
+                                if (examType == null) {
+                                    Dialog.showWarning(
+                                            "Please fill in all required fields!",
+                                            "Warning"
+                                    );
+                                    return;
+                                }
+                                ExamDAO.insertTask(new Exam(null, title, dueDate, TaskType.EXAM, null, examType, isMockToggle.isSelected()), selectedSubject.getSubjectID());
+                                break;
+                        }
+                        dialog.dispose();
+                        refreshTasks(tasksPanel, detailsPanel);
+                    }
+                    catch (Exception ex) {
+                        Dialog.showWarning(
+                                "Error adding task: " + ex.getMessage(),
+                                "Warning"
+                        );
+                    }
+                },
+                false,
+                true
+        );
         buttonPanel.add(addBtn);
-        buttonPanel.add(cancelBtn);
 
         panel.add(buttonPanel);
         dialog.getRootPane().setDefaultButton(addBtn);
-
-        // logic
-
-        addBtn.addActionListener(e -> {
-            String title = titleField.getText().trim();
-            java.sql.Date dueDate = new java.sql.Date(dateChooser.getDate().getTime());
-            TaskType selected = (TaskType) taskTypeCombo.getSelectedItem();
-
-            if (title.isEmpty() || selected == null) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
-                return;
-            }
-
-            try {
-                switch (selected) {
-                    case HOMEWORK:
-                        String lesson = (lessonField.getText() == null) ? null : lessonField.getText().trim();
-                        HomeworkDAO.insertTask(new Homework(null, title, dueDate, TaskType.HOMEWORK, null, lesson), selectedSubject.getSubjectID());
-                        break;
-
-                    case IA:
-                        String section = (sectionField.getText() == null) ? null : sectionField.getText().trim();
-                        IADAO.insertTask(new IA(null, title, dueDate, TaskType.IA, null, section, isExperimentToggle.isSelected(), isWritingToggle.isSelected()), selectedSubject.getSubjectID());
-                        break;
-
-                    case EXAM:
-                        Assessment examType = (Assessment) examTypeCombo.getSelectedItem();
-                        if (examType == null) {
-                            JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
-                            return;
-                        }
-                        ExamDAO.insertTask(new Exam(null, title, dueDate, TaskType.EXAM, null, examType, isMockToggle.isSelected()), selectedSubject.getSubjectID());
-                        break;
-                }
-                dialog.dispose();
-                refreshTasks(tasksPanel, detailsPanel);
-            }
-            catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Error adding task: " + ex.getMessage());
-            }
-        });
-        cancelBtn.addActionListener(e -> dialog.dispose());
 
         // dialog
         dialog.add(panel);
@@ -413,10 +437,9 @@ public class HomePage extends JPanel {
 
     private void showEditTaskDialog(JPanel tasksPanel, JPanel detailsPanel) {
         if (selectedTask == null) {
-            JOptionPane.showMessageDialog(null,
+            Dialog.showWarning(
                     "Please select a task first!",
-                    "Warning",
-                    JOptionPane.WARNING_MESSAGE
+                    "Warning"
             );
             return;
         }
@@ -432,12 +455,12 @@ public class HomePage extends JPanel {
 
         // general
 
-        panel.add(new JLabel("Title:"));
+        panel.add(new BodyText("Title:"));
         JTextField titleField = new JTextField(20);
         titleField.setText(selectedTask.getTitle());
         panel.add(titleField);
 
-        panel.add(new JLabel("Deadline:"));
+        panel.add(new BodyText("Deadline:"));
         JDateChooser dateChooser = new JDateChooser();
         dateChooser.setDate(new java.util.Date());
         dateChooser.setDateFormatString("dd-MM-yyyy");
@@ -449,7 +472,7 @@ public class HomePage extends JPanel {
         JPanel homeworkPanel = new JPanel();
         homeworkPanel.setLayout(new BoxLayout(homeworkPanel, BoxLayout.Y_AXIS));
 
-        homeworkPanel.add(new JLabel("Lesson:"));
+        homeworkPanel.add(new BodyText("Lesson:"));
         JTextField lessonField = new JTextField(20);
         homeworkPanel.add(lessonField);
 
@@ -458,7 +481,7 @@ public class HomePage extends JPanel {
         JPanel IAPanel = new JPanel();
         IAPanel.setLayout(new BoxLayout(IAPanel, BoxLayout.Y_AXIS));
 
-        IAPanel.add(new JLabel("Section:"));
+        IAPanel.add(new BodyText("Section:"));
         JTextField sectionField = new JTextField(20);
         IAPanel.add(sectionField);
 
@@ -472,7 +495,7 @@ public class HomePage extends JPanel {
         JPanel examPanel = new JPanel();
         examPanel.setLayout(new BoxLayout(examPanel, BoxLayout.Y_AXIS));
 
-        examPanel.add(new JLabel("Assessment type:"));
+        examPanel.add(new BodyText("Assessment type:"));
         JComboBox<Assessment> examTypeCombo = new JComboBox<>(Assessment.values());
         examPanel.add(examTypeCombo);
 
@@ -509,54 +532,64 @@ public class HomePage extends JPanel {
 
         JPanel buttonPanel = new JPanel();
 
-        JButton editBtn = new JButton("Edit");
-        JButton cancelBtn = new JButton("Cancel");
+        buttonPanel.add(new Button(
+                "Cancel",
+                e -> dialog.dispose()
+        ));
+        Button editBtn = new Button(
+                "Edit",
+                e -> {
+                    String title = titleField.getText().trim();
+                    java.sql.Date dueDate = new java.sql.Date(dateChooser.getDate().getTime());
 
+                    if (title.isEmpty()) {
+                        Dialog.showWarning(
+                                "Please fill in all required fields!",
+                                "Warning"
+                        );
+                        return;
+                    }
+
+                    selectedTask.setTitle(title);
+                    selectedTask.setDeadline(dueDate);
+
+                    try {
+                        if (selectedTask instanceof Homework) {
+                            ((Homework) selectedTask).setLesson((lessonField.getText() == null) ? null : lessonField.getText().trim());
+                            HomeworkDAO.updateTask((Homework) selectedTask);
+                        }
+                        else if (selectedTask instanceof IA) {
+                            ((IA) selectedTask).setSection((sectionField.getText() == null) ? null : sectionField.getText().trim());
+                            IADAO.updateTask((IA) selectedTask);
+                        }
+                        else if (selectedTask instanceof Exam) {
+                            if (examTypeCombo.getSelectedItem() == null) {
+                                Dialog.showWarning(
+                                        "Please fill in all required fields!",
+                                        "Warning"
+                                );
+                                return;
+                            }
+                            ((Exam) selectedTask).setAssessmentType((Assessment) examTypeCombo.getSelectedItem());
+                            ExamDAO.updateTask((Exam) selectedTask);
+                        }
+                        dialog.dispose();
+                        refreshTasks(tasksPanel, detailsPanel);
+                    }
+                    catch (Exception ex) {
+                        Dialog.showWarning(
+                                "Error editing task: " + ex.getMessage(),
+                                "Warning"
+                        );
+                    }
+                },
+                false,
+                true
+        );
         buttonPanel.add(editBtn);
-        buttonPanel.add(cancelBtn);
 
         panel.add(buttonPanel);
         dialog.getRootPane().setDefaultButton(editBtn);
-
-        // logic
-
-        editBtn.addActionListener(e -> {
-            String title = titleField.getText().trim();
-            java.sql.Date dueDate = new java.sql.Date(dateChooser.getDate().getTime());
-
-            if (title.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
-                return;
-            }
-
-            selectedTask.setTitle(title);
-            selectedTask.setDeadline(dueDate);
-
-            try {
-                if (selectedTask instanceof Homework) {
-                    ((Homework) selectedTask).setLesson((lessonField.getText() == null) ? null : lessonField.getText().trim());
-                    HomeworkDAO.updateTask((Homework) selectedTask);
-                }
-                else if (selectedTask instanceof IA) {
-                    ((IA) selectedTask).setSection((sectionField.getText() == null) ? null : sectionField.getText().trim());
-                    IADAO.updateTask((IA) selectedTask);
-                }
-                else if (selectedTask instanceof Exam) {
-                    if (examTypeCombo.getSelectedItem() == null) {
-                        JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
-                        return;
-                    }
-                    ((Exam) selectedTask).setAssessmentType((Assessment) examTypeCombo.getSelectedItem());
-                    ExamDAO.updateTask((Exam) selectedTask);
-                }
-                dialog.dispose();
-                refreshTasks(tasksPanel, detailsPanel);
-            }
-            catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Error editing task: " + ex.getMessage());
-            }
-        });
-        cancelBtn.addActionListener(e -> dialog.dispose());
 
         // dialog
         dialog.add(panel);

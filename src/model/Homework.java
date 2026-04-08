@@ -1,5 +1,6 @@
 package model;
 
+import ui.elements.BodyText;
 import util.TaskType;
 
 import javax.swing.*;
@@ -26,14 +27,10 @@ public class Homework extends Task {
     public void showDetails(JPanel panel) {
         super.showDetails(panel);
 
-        JLabel type = new JLabel("Type: Homework");
-        type.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(type);
+        panel.add(new BodyText("Type: Homework"));
 
         if (!getLesson().isEmpty()) {
-            JLabel lesson = new JLabel("Lesson: " + getLesson());
-            lesson.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(lesson);
+            panel.add(new BodyText("Lesson: " + getLesson()));
         }
     }
 }

@@ -1,5 +1,6 @@
 package model;
 
+import ui.elements.BodyText;
 import util.TaskType;
 
 import javax.swing.*;
@@ -48,13 +49,8 @@ public class Task {
     public Timestamp getTimestamp() { return timestamp; }
 
     public void showDetails(JPanel panel) {
-        JLabel t = new JLabel("Title: " + getTitle());
-        t.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(t);
-
-        JLabel d = new JLabel("Deadline: " + getRelativeDeadline());
-        d.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(d);
+        panel.add(new BodyText("Title: " + getTitle()));
+        panel.add(new BodyText("Deadline: " + getRelativeDeadline()));
     }
 
     public String getRelativeDeadline() {
