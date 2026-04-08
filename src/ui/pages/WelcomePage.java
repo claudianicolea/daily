@@ -5,14 +5,14 @@ import dao.SettingsDAO;
 import main.Main;
 import model.Profile;
 import model.Settings;
-import ui.elements.*;
+import ui.elements.BodyText;
 import ui.elements.Button;
 import ui.elements.Dialog;
+import ui.elements.Title;
 import util.Page;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static main.Main.settings;

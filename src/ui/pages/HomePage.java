@@ -428,7 +428,6 @@ public class HomePage extends JPanel {
         panel.add(buttonPanel);
         dialog.getRootPane().setDefaultButton(addBtn);
 
-        // dialog
         dialog.add(panel);
         dialog.pack();
         dialog.setLocationRelativeTo(null);

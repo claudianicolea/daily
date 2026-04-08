@@ -1,16 +1,15 @@
 package ui.pages;
 
 import dao.ProfileDAO;
-import dao.TaskDAO;
 import main.Main;
 import model.Settings;
-import ui.elements.*;
+import ui.elements.BodyText;
 import ui.elements.Button;
 import ui.elements.Dialog;
+import ui.elements.Title;
 import util.Page;
 
 import javax.swing.*;
-
 import java.awt.*;
 
 import static main.Main.settings;

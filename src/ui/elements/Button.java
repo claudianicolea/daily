@@ -1,9 +1,9 @@
 package ui.elements;
 
 import javax.swing.*;
+import javax.swing.border.AbstractBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import javax.swing.border.*;
 
 import static main.Main.settings;
 

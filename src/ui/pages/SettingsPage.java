@@ -2,8 +2,9 @@ package ui.pages;
 
 import dao.SettingsDAO;
 import main.Main;
-import ui.elements.*;
+import ui.elements.BodyText;
 import ui.elements.Button;
+import ui.elements.Title;
 import util.Page;
 import util.TaskSortMode;
 

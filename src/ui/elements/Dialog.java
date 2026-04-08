@@ -2,9 +2,6 @@ package ui.elements;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
-
-import static main.Main.settings;
 
 public class Dialog {
     public static void showWarning(String message, String title) {

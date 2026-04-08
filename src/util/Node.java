@@ -21,10 +21,8 @@ public class Node {
     }
 
     public Subject getSubjectValue() { return subjectValue; }
-    public void setSubjectValue(Subject subjectValue) { this.subjectValue = subjectValue; }
 
     public Task getTaskValue() { return taskValue; }
-    public void setTaskValue(Task taskValue) { this.taskValue = taskValue; }
 
     public Node getNext() { return next; }
     public void setNext(Node next) { this.next = next; }

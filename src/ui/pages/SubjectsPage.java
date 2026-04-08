@@ -3,16 +3,15 @@ package ui.pages;
 import dao.SubjectDAO;
 import main.Main;
 import model.Subject;
-import ui.elements.*;
+import ui.elements.BodyText;
 import ui.elements.Button;
 import ui.elements.Dialog;
+import ui.elements.Title;
 import util.LinkedList;
 import util.Node;
 import util.Page;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-
 import java.awt.*;
 
 import static main.Main.settings;

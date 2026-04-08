@@ -6,7 +6,6 @@ import ui.pages.*;
 import util.Page;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class Main {
     public static Profile user;

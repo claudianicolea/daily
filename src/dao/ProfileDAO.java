@@ -85,18 +85,4 @@ public class ProfileDAO {
             e.printStackTrace();
         }
     }
-
-    public static void deleteProfile(String profileID) {
-        String sql = "DELETE FROM profiles WHERE profileID = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement s = conn.prepareStatement(sql)) {
-
-            s.setString(1, profileID);
-            s.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 }
