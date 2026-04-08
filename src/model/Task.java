@@ -14,14 +14,12 @@ import java.util.Locale;
 
 public class Task {
     private String taskID, title;
-    private final String subjectID;
     private Date deadline;
     private final TaskType type;
     private final Timestamp timestamp;
 
-    public Task(String taskID, String subjectID, String title, Date deadline, TaskType type, Timestamp timestamp) {
+    public Task(String taskID, String title, Date deadline, TaskType type, Timestamp timestamp) {
         this.taskID = taskID;
-        this.subjectID = subjectID;
         this.title = title;
         this.deadline = deadline;
         this.type = type;
@@ -30,8 +28,6 @@ public class Task {
 
     public void setTaskID(String taskID) { this.taskID = taskID; }
     public String getTaskID() { return taskID; }
-
-    public String getSubjectID() { return subjectID; }
 
     public void setTitle(String title) {
         this.title = title;

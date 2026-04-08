@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.util.regex.Pattern;
 
 import static main.Main.user;
+import static main.Main.settings;
 
 public class WelcomePage extends JPanel {
     //TODO Revise welcome page UI
@@ -64,43 +65,41 @@ public class WelcomePage extends JPanel {
             String password = new String(passwordField.getPassword());
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Please fill in all fields!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
             if (!isValidEmail(email)) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Please enter a valid email address!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
             // register new profile
 
-            Settings defaultSettings = new Settings();
-            Profile newProfile = new Profile(null, defaultSettings.getSettingsID(), name, email, password);
-
             if (ProfileDAO.getProfileByEmail(email) != null) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Email already exists!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
-            SettingsDAO.insertSettings(defaultSettings);
+            Profile newProfile = new Profile(null, name, email, password);
             ProfileDAO.insertProfile(newProfile);
             Profile savedProfile = ProfileDAO.getProfileByEmail(email);
 
             if (savedProfile == null) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Failed to save student profile!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
@@ -108,8 +107,27 @@ public class WelcomePage extends JPanel {
                 return;
             }
 
+            Settings newSettings = new Settings();
+            SettingsDAO.insertSettings(newSettings, savedProfile.getProfileID());
+            Settings savedSettings = SettingsDAO.getSubjectsByProfile(savedProfile.getProfileID());
+
+            if (savedSettings == null) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Failed to load settings!",
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
             user = savedProfile;
-            JOptionPane.showMessageDialog(null, "Account created! Welcome, " + user.getName());
+            settings = savedSettings;
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Account created! Welcome, " + user.getName()
+            );
             Main.showPanel(Page.HOMEPAGE);
         }
     }
@@ -139,47 +157,49 @@ public class WelcomePage extends JPanel {
             String password = new String(passwordField.getPassword());
 
             if (email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Please fill in all fields!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
             if (!isValidEmail(email)) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Please enter a valid email address!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
             // fetch user
 
             Profile fetchedUser = ProfileDAO.getProfileByEmail(email);
             if (fetchedUser == null) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Incorrect credentials. Please double check and retry!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
             if (!fetchedUser.getPassword().equals(password)) {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(
+                        null,
                         "Incorrect credentials. Please double check and retry!",
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
 
             user = fetchedUser;
-            JOptionPane.showMessageDialog(null,
-                    "Welcome back, " + user.getName() + "!");
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Welcome back, " + user.getName() + "!"
+            );
             Main.showPanel(Page.HOMEPAGE);
         }
     }

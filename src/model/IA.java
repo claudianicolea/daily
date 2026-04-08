@@ -11,8 +11,8 @@ public class IA extends Task {
     private String section;
     private boolean isExperiment, isWriting;
 
-    public IA(String taskID, String subjectID, String title, Date deadline, TaskType type, Timestamp timestamp, String section, boolean isExperiment, boolean isWriting) {
-        super(taskID, subjectID, title, deadline, type, timestamp);
+    public IA(String taskID, String title, Date deadline, TaskType type, Timestamp timestamp, String section, boolean isExperiment, boolean isWriting) {
+        super(taskID, title, deadline, type, timestamp);
         this.section = section;
         this.isExperiment = isExperiment;
         this.isWriting = isWriting;

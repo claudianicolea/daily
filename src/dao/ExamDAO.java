@@ -5,7 +5,7 @@ import model.Exam;
 import java.sql.*;
 
 public class ExamDAO extends TaskDAO {
-    public static void insertTask(Exam task) {
+    public static void insertTask(Exam task, String subjectID) {
         String sql = """
             INSERT INTO tasks (
                 subjectID,
@@ -20,7 +20,7 @@ public class ExamDAO extends TaskDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            s.setString(1, task.getSubjectID());
+            s.setString(1, subjectID);
             s.setString(2, task.getTitle());
             s.setDate(3, task.getDeadline());
             s.setString(4, task.getType().toString());

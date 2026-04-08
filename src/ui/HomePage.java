@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 
+import static main.Main.settings;
 import static main.Main.user;
 
 public class HomePage extends JPanel {
@@ -32,7 +33,7 @@ public class HomePage extends JPanel {
         left.add(titleS, BorderLayout.NORTH);
 
         left.add(new JScrollPane(subjects), BorderLayout.CENTER);
-        left.setBackground(user.getSettings().getAccentColor());
+        left.setBackground(settings.getAccentColor());
         left.setPreferredSize(new Dimension(200, 0));
 
         JPanel tasks = new JPanel();
@@ -70,7 +71,7 @@ public class HomePage extends JPanel {
         JScrollPane tasksScrollPane = new JScrollPane(tasks);
         tasksScrollPane.setBackground(Color.WHITE);
         center.add(tasksScrollPane, BorderLayout.CENTER);
-        center.setBackground(user.getSettings().getAccentColor());
+        center.setBackground(settings.getAccentColor());
 
         // right - task details
 
@@ -83,18 +84,44 @@ public class HomePage extends JPanel {
 
         right.add(new JScrollPane(details), BorderLayout.CENTER);
 
+        JPanel taskButtons = new JPanel();
+
         JButton editTaskBtn = new JButton("Edit");
         editTaskBtn.addActionListener(e -> showEditTaskDialog(tasks, details));
-        right.add(editTaskBtn, BorderLayout.SOUTH);
+        taskButtons.add(editTaskBtn);
 
-        right.setBackground(user.getSettings().getAccentColor());
+        JButton deleteTaskBtn = new JButton("Delete");
+        deleteTaskBtn.addActionListener(e -> {
+            if (selectedTask == null) {
+                JOptionPane.showMessageDialog(null,
+                        "Please select a task first!",
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to delete " + selectedTask.getTitle() + "?",
+                    "Delete Task",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                TaskDAO.deleteTask(selectedTask.getTaskID());
+                refreshTasks(tasks, details);
+            }
+        });
+        taskButtons.add(deleteTaskBtn);
+
+        right.add(taskButtons, BorderLayout.SOUTH);
+        right.setBackground(settings.getAccentColor());
         right.setPreferredSize(new Dimension(200, 0));
 
         // bottom - buttons to profile, settings, subjects
 
         JPanel bottom = new JPanel();
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
-        bottom.setBackground(user.getSettings().getAccentColor());
+        bottom.setBackground(settings.getAccentColor());
 
         JButton profileBtn = new JButton("Profile");
         profileBtn.addActionListener(e -> {
@@ -127,12 +154,15 @@ public class HomePage extends JPanel {
     private void refreshTasks(JPanel tasksPanel, JPanel detailsPanel) {
         tasksPanel.removeAll();
         detailsPanel.removeAll();
+        selectedTask = null;
+        detailsPanel.revalidate();
+        detailsPanel.repaint();
 
         if (selectedSubject == null) return;
 
         LinkedList tasks = TaskDAO.getTasksBySubject(selectedSubject.getSubjectID());
 
-        switch (user.getSettings().getTaskSortMode()) {
+        switch (settings.getTaskSortMode()) {
             case ALPHABETICAL -> tasks.sortTasksByAlphabet();
             case CREATION_DATE -> tasks.sortTasksByCreationDate();
             case DEADLINE -> tasks.sortTasksByDeadline();
@@ -170,7 +200,7 @@ public class HomePage extends JPanel {
             }
 
             // restore task selection
-            if (selectedTask != null && t.getTaskID().equals(selectedTask.getTaskID())) {
+            if (selectedTask != null && t.getTaskID().equals(selectedTask.getTaskID()) && !t.getDeadline().toLocalDate().isBefore(LocalDate.now())) {
                 taskBtn.setSelected(true);
                 selectedTask = t;
                 detailsPanel.removeAll();
@@ -184,7 +214,7 @@ public class HomePage extends JPanel {
         }
 
         // if there was no previously selected task, select the first one
-        if (group.getSelection() == null && firstTask != null) {
+        if (group.getSelection() == null && firstTask != null && !firstTask.getDeadline().toLocalDate().isBefore(LocalDate.now())) {
             firstBtn.setSelected(true);
             selectedTask = firstTask;
 
@@ -302,7 +332,7 @@ public class HomePage extends JPanel {
         panel.add(examPanel);
         homeworkPanel.setVisible(false);
         IAPanel.setVisible(false);
-        examPanel.setVisible(true); // exam is autoselected -> displayed first
+        examPanel.setVisible(false);
 
         // type switching
 
@@ -316,6 +346,8 @@ public class HomePage extends JPanel {
             panel.revalidate();
             panel.repaint();
         });
+        taskTypeCombo.setSelectedIndex(0);
+        taskTypeCombo.getActionListeners()[0].actionPerformed(null);
 
         // buttons
 
@@ -346,12 +378,12 @@ public class HomePage extends JPanel {
                 switch (selected) {
                     case HOMEWORK:
                         String lesson = (lessonField.getText() == null) ? null : lessonField.getText().trim();
-                        HomeworkDAO.insertTask(new Homework(null, selectedSubject.getSubjectID(), title, dueDate, TaskType.HOMEWORK, null, lesson));
+                        HomeworkDAO.insertTask(new Homework(null, title, dueDate, TaskType.HOMEWORK, null, lesson), selectedSubject.getSubjectID());
                         break;
 
                     case IA:
                         String section = (sectionField.getText() == null) ? null : sectionField.getText().trim();
-                        IADAO.insertTask(new IA(null, selectedSubject.getSubjectID(), title, dueDate, TaskType.IA, null, section, isExperimentToggle.isSelected(), isWritingToggle.isSelected()));
+                        IADAO.insertTask(new IA(null, title, dueDate, TaskType.IA, null, section, isExperimentToggle.isSelected(), isWritingToggle.isSelected()), selectedSubject.getSubjectID());
                         break;
 
                     case EXAM:
@@ -360,7 +392,7 @@ public class HomePage extends JPanel {
                             JOptionPane.showMessageDialog(dialog, "Please fill in all required fields!");
                             return;
                         }
-                        ExamDAO.insertTask(new Exam(null, selectedSubject.getSubjectID(), title, dueDate, TaskType.EXAM, null, examType, isMockToggle.isSelected()));
+                        ExamDAO.insertTask(new Exam(null, title, dueDate, TaskType.EXAM, null, examType, isMockToggle.isSelected()), selectedSubject.getSubjectID());
                         break;
                 }
                 dialog.dispose();
@@ -380,6 +412,15 @@ public class HomePage extends JPanel {
     }
 
     private void showEditTaskDialog(JPanel tasksPanel, JPanel detailsPanel) {
+        if (selectedTask == null) {
+            JOptionPane.showMessageDialog(null,
+                    "Please select a task first!",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
         JDialog dialog = new JDialog();
         dialog.setPreferredSize(new Dimension(400, 300));
         dialog.setLocationRelativeTo(null);

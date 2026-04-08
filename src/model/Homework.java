@@ -10,8 +10,8 @@ import java.sql.Timestamp;
 public class Homework extends Task {
     private String lesson;
 
-    public Homework(String taskID, String subjectID, String title, Date deadline, TaskType type, Timestamp timestamp, String lesson) {
-        super(taskID, subjectID, title, deadline, type, timestamp);
+    public Homework(String taskID, String title, Date deadline, TaskType type, Timestamp timestamp, String lesson) {
+        super(taskID, title, deadline, type, timestamp);
         this.lesson = lesson;
     }
 

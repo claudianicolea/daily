@@ -46,7 +46,6 @@ public class SubjectsPage extends JPanel {
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
             Subject subject = new Subject(null, user.getProfileID(), newSubjectName);
             SubjectDAO.insertSubject(subject, subject.getProfileID());
@@ -88,7 +87,6 @@ public class SubjectsPage extends JPanel {
                             "Warning",
                             JOptionPane.WARNING_MESSAGE
                     );
-                    return;
                 }
                 s.setName(newSubjectName);
                 SubjectDAO.updateSubject(s);

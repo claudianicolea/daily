@@ -12,8 +12,8 @@ public class Exam extends Task {
     private Assessment type;
     private boolean isMock;
 
-    public Exam(String taskID, String subjectID, String title, Date deadline, TaskType tt, Timestamp timestamp, Assessment at, boolean isMock) {
-        super(taskID, subjectID, title, deadline, tt, timestamp);
+    public Exam(String taskID, String title, Date deadline, TaskType tt, Timestamp timestamp, Assessment at, boolean isMock) {
+        super(taskID, title, deadline, tt, timestamp);
         type = at;
         this.isMock = isMock;
     }

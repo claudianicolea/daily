@@ -1,6 +1,7 @@
 package dao;
 
 import model.Profile;
+import model.Settings;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,29 +12,26 @@ public class ProfileDAO {
     public static void insertProfile(Profile profile) {
         String sql = """
             INSERT INTO profiles (
-                settingsID,
                 name,
                 email,
                 password
-            ) VALUES (?, ?, ?, ?)
+            ) VALUES (?, ?, ?)
         """;
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement s = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-            s.setString(1, profile.getSettingsID());
-            s.setString(2, profile.getName());
-            s.setString(3, profile.getEmail());
-            s.setString(4, profile.getPassword());
+            s.setString(1, profile.getName());
+            s.setString(2, profile.getEmail());
+            s.setString(3, profile.getPassword());
 
             s.executeUpdate();
-
             ResultSet generatedKeys = s.getGeneratedKeys();
             if (generatedKeys.next()) {
                 profile.setProfileID(String.valueOf(generatedKeys.getInt(1)));
             }
-
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -50,13 +48,11 @@ public class ProfileDAO {
 
             if (r.next()) {
                 String profileID = r.getString("profileID");
-                String settingsID = r.getString("settingsID");
                 String name = r.getString("name");
                 String password = r.getString("password");
 
                 profile = new Profile(
                     profileID,
-                    settingsID,
                     name,
                     email,
                     password

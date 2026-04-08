@@ -26,7 +26,6 @@ public class TaskDAO {
                     case EXAM:
                         task = new Exam(
                                 r.getString("taskID"),
-                                subjectID,
                                 r.getString("title"),
                                 r.getDate("deadline"),
                                 TaskType.EXAM,
@@ -39,7 +38,6 @@ public class TaskDAO {
                     case HOMEWORK:
                         task = new Homework(
                                 r.getString("taskID"),
-                                subjectID,
                                 r.getString("title"),
                                 r.getDate("deadline"),
                                 TaskType.HOMEWORK,
@@ -51,7 +49,6 @@ public class TaskDAO {
                     case IA:
                         task = new IA(
                                 r.getString("taskID"),
-                                subjectID,
                                 r.getString("title"),
                                 r.getDate("deadline"),
                                 TaskType.IA,
@@ -77,7 +74,6 @@ public class TaskDAO {
 
         return tasks;
     }
-
 
     public static void deleteTask(String taskID) {
         String sql = "DELETE FROM tasks WHERE taskID = ?";

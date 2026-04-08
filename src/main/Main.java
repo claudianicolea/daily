@@ -1,6 +1,7 @@
 package main;
 
 import model.Profile;
+import model.Settings;
 import ui.*;
 import util.Page;
 
@@ -9,6 +10,7 @@ import javax.swing.*;
 public class Main {
     //TODO Optimize imports for all classes
     public static Profile user;
+    public static Settings settings;
     public static JFrame frame = new JFrame("Daily");
 
     static void main() {

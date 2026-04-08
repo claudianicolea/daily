@@ -37,7 +37,6 @@ public class ProfilePage extends JPanel {
                         "Warning",
                         JOptionPane.WARNING_MESSAGE
                 );
-                return;
             }
             user.setName(newName);
             ProfileDAO.updateProfile(user);
