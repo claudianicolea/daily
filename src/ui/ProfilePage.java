@@ -1,9 +1,7 @@
 package ui;
 
-import dao.HomeworkDAO;
 import dao.ProfileDAO;
 import main.Main;
-import model.Homework;
 import util.Page;
 
 import javax.swing.*;

@@ -1,11 +1,18 @@
 package dao;
 
-import model.*;
-import util.*;
+import model.Exam;
+import model.Homework;
+import model.IA;
+import model.Task;
+import util.Assessment;
 import util.LinkedList;
+import util.Node;
+import util.TaskType;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class TaskDAO {
     public static LinkedList getTasksBySubject(String subjectID) {

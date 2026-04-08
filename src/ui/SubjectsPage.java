@@ -9,8 +9,6 @@ import util.Page;
 
 import javax.swing.*;
 
-import java.awt.*;
-
 import static main.Main.user;
 
 public class SubjectsPage extends JPanel {

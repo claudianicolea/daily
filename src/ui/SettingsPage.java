@@ -2,21 +2,17 @@ package ui;
 
 import dao.SettingsDAO;
 import main.Main;
-import model.Settings;
 import util.Page;
 import util.TaskSortMode;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.util.Map;
-import java.util.Objects;
 
 import static main.Main.settings;
-import static main.Main.user;
 import static model.Settings.colorMap;
 
-//TODO Settings page UI
+//TODO Revise settings page UI
 public class SettingsPage extends JPanel {
     public SettingsPage() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));

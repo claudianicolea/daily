@@ -3,9 +3,9 @@ package model;
 import util.TaskType;
 
 import javax.swing.*;
+import java.awt.*;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;

@@ -10,8 +10,8 @@ import util.Page;
 import javax.swing.*;
 import java.util.regex.Pattern;
 
-import static main.Main.user;
 import static main.Main.settings;
+import static main.Main.user;
 
 public class WelcomePage extends JPanel {
     //TODO Revise welcome page UI
