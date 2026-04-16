@@ -89,12 +89,12 @@ public class SettingsDAO {
         }
     }
 
-    public static String toHex(Color rgb) {
+    private static String toHex(Color rgb) {
         int r = rgb.getRed(), g = rgb.getGreen(), b = rgb.getBlue();
         return String.format("#%02X%02X%02X", r, g, b);
     }
 
-    public static Color toRgb(String hex) {
+    private static Color toRgb(String hex) {
         // Remove the leading '#' if present
         if (hex.startsWith("#")) {
             hex = hex.substring(1);
